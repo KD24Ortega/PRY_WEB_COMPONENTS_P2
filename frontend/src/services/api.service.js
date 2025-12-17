@@ -83,32 +83,32 @@ class ApiService {
     }
 
     // === ESPECIALIDADES ===
+    async getEspecialidadesPublic() {
+        const url = `${API_URL}/auth/especialidades`;
+        const config = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        };
+
+        try {
+            const response = await fetch(url, config);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error en la petición');
+            }
+
+            return data;
+        } catch (error) {
+            console.error('Error al obtener especialidades:', error);
+            throw error;
+        }
+    }
+
     async getEspecialidades() {
         return this.request('/especialidades');
-    }
-
-    async getEspecialidadById(id) {
-        return this.request(`/especialidades/${id}`);
-    }
-
-    async createEspecialidad(data) {
-        return this.request('/especialidades', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async updateEspecialidad(id, data) {
-        return this.request(`/especialidades/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async deleteEspecialidad(id) {
-        return this.request(`/especialidades/${id}`, {
-            method: 'DELETE'
-        });
     }
 
     // === MÉDICOS ===

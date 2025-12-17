@@ -27,8 +27,14 @@ exports.getByConsulta = async (req, res) => {
         const { idConsulta } = req.params;
         const recetas = await query(
             `SELECT r.*, 
+                    c.FechaConsulta, c.Diagnostico,
+                    m.Nombre as NombreMedico,
+                    p.Nombre as NombrePaciente,
                     med.Nombre as NombreMedicamento, med.Tipo as TipoMedicamento
              FROM recetas r
+             INNER JOIN consultas c ON r.IdConsulta = c.IdConsulta
+             INNER JOIN medicos m ON c.IdMedico = m.IdMedico
+             INNER JOIN pacientes p ON c.IdPaciente = p.IdPaciente
              INNER JOIN medicamentos med ON r.IdMedicamento = med.IdMedicamento
              WHERE r.IdConsulta = ?`,
             [idConsulta]
@@ -74,9 +80,26 @@ exports.create = async (req, res) => {
             [idConsulta, idMedicamento, cantidad]
         );
         
+        // Obtener la receta completa con todos los datos
+        const recetaCompleta = await query(
+            `SELECT r.*, 
+                    c.FechaConsulta, c.Diagnostico,
+                    m.Nombre as NombreMedico,
+                    p.Nombre as NombrePaciente,
+                    med.Nombre as NombreMedicamento, med.Tipo as TipoMedicamento
+             FROM recetas r
+             INNER JOIN consultas c ON r.IdConsulta = c.IdConsulta
+             INNER JOIN medicos m ON c.IdMedico = m.IdMedico
+             INNER JOIN pacientes p ON c.IdPaciente = p.IdPaciente
+             INNER JOIN medicamentos med ON r.IdMedicamento = med.IdMedicamento
+             WHERE r.IdReceta = ?`,
+            [result.insertId]
+        );
+        
         res.status(201).json({ 
             message: 'Receta creada exitosamente',
-            id: result.insertId 
+            id: result.insertId,
+            receta: recetaCompleta[0]
         });
     } catch (error) {
         console.error('Error:', error);

@@ -1,14 +1,12 @@
 import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 import authService from '../services/auth.service.js';
 
-// Importar componentes
 import './layout/app-header.js';
 import './layout/app-sidebar.js';
 import './layout/app-footer.js';
 import './auth/login-component.js';
 import './auth/register-component.js';
 
-// Componentes de admin
 import './admin/admin-dashboard.js';
 import './admin/especialidades-manager.js';
 import './admin/medicos-manager.js';
@@ -16,13 +14,13 @@ import './admin/pacientes-manager.js';
 import './admin/medicamentos-manager.js';
 import './admin/usuarios-manager.js';
 import './admin/administradores-manager.js';
+import './admin/admin-consultas.js';
+import './admin/admin-recetas.js';
 
-// Componentes de médico
 import './medico/medico-dashboard.js';
-import './medico/consultas-manager.js';
-import './medico/recetas-manager.js';
+import './medico/medico-consultas.js';
+import './medico/medico-recetas.js';
 
-// Componentes de paciente
 import './paciente/paciente-dashboard.js';
 import './paciente/mis-consultas.js';
 import './paciente/mis-recetas.js';
@@ -148,9 +146,7 @@ class AppRoot extends LitElement {
             return html`<login-component></login-component>`;
         }
 
-        // Renderizar según el rol y la vista actual
         switch (this.currentView) {
-            // Vistas de Admin
             case 'admin-dashboard':
                 return html`<admin-dashboard></admin-dashboard>`;
             case 'especialidades':
@@ -166,19 +162,17 @@ class AppRoot extends LitElement {
             case 'administradores':
                 return html`<administradores-manager></administradores-manager>`;
             case 'admin-consultas':
-                return html`<consultas-manager .isAdmin=${true}></consultas-manager>`;
+                return html`<admin-consultas></admin-consultas>`;
             case 'admin-recetas':
-                return html`<recetas-manager .isAdmin=${true}></recetas-manager>`;
+                 return html`<admin-recetas></admin-recetas>`;
 
-            // Vistas de Médico
             case 'medico-dashboard':
                 return html`<medico-dashboard></medico-dashboard>`;
             case 'medico-consultas':
-                return html`<consultas-manager></consultas-manager>`;
+                return html`<medico-consultas></medico-consultas>`;
             case 'medico-recetas':
-                return html`<recetas-manager></recetas-manager>`;
+                return html`<medico-recetas></medico-recetas>`;
 
-            // Vistas de Paciente
             case 'paciente-dashboard':
                 return html`<paciente-dashboard></paciente-dashboard>`;
             case 'paciente-consultas':
@@ -187,11 +181,7 @@ class AppRoot extends LitElement {
                 return html`<mis-recetas></mis-recetas>`;
 
             default:
-                return html`
-                    <div class="alert alert-warning">
-                        Vista no encontrada: ${this.currentView}
-                    </div>
-                `;
+                return html`<div>Vista no encontrada: ${this.currentView}</div>`;
         }
     }
 

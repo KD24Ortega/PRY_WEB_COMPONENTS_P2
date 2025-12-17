@@ -1,10 +1,9 @@
 import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 import apiService from '../../services/api.service.js';
-import authService from '../../services/auth.service.js';
 import '../shared/data-table.js';
 import '../shared/loading-spinner.js';
 
-class ConsultasManager extends LitElement {
+class AdminConsultas extends LitElement {
     static styles = css`
         :host {
             display: block;
@@ -15,8 +14,6 @@ class ConsultasManager extends LitElement {
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
         }
 
         .page-title {
@@ -43,11 +40,6 @@ class ConsultasManager extends LitElement {
             gap: 8px;
         }
 
-        .btn-add:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 102, 204, 0.3);
-        }
-
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -59,7 +51,6 @@ class ConsultasManager extends LitElement {
             justify-content: center;
             align-items: center;
             z-index: 2000;
-            backdrop-filter: blur(4px);
         }
 
         .modal-content {
@@ -70,20 +61,17 @@ class ConsultasManager extends LitElement {
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             margin-bottom: 25px;
             padding-bottom: 15px;
             border-bottom: 2px solid #E0E6ED;
         }
 
         .modal-title {
-            font-family: 'Poppins', sans-serif;
             font-size: 1.5rem;
             font-weight: 600;
             color: #0066CC;
@@ -94,22 +82,12 @@ class ConsultasManager extends LitElement {
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
-            color: #5A7C92;
-            transition: all 0.3s ease;
-        }
-
-        .btn-close:hover {
-            color: #DC3545;
         }
 
         .form-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
         }
 
         .form-group.full-width {
@@ -119,30 +97,18 @@ class ConsultasManager extends LitElement {
         label {
             display: block;
             font-weight: 600;
-            color: #2C5282;
             margin-bottom: 8px;
-            font-size: 0.95rem;
         }
 
         input, select, textarea {
             width: 100%;
-            padding: 12px 15px;
+            padding: 12px;
             border: 2px solid #E0E6ED;
             border-radius: 8px;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            font-family: inherit;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #0066CC;
-            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
         }
 
         textarea {
             min-height: 120px;
-            resize: vertical;
         }
 
         .modal-footer {
@@ -154,87 +120,63 @@ class ConsultasManager extends LitElement {
             border-top: 2px solid #E0E6ED;
         }
 
-        .btn-cancel {
+        .btn-cancel, .btn-save {
             padding: 10px 20px;
-            background: #F8F9FA;
-            color: #5A7C92;
-            border: 2px solid #E0E6ED;
             border-radius: 8px;
-            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
         }
 
-        .btn-cancel:hover {
-            background: #E9ECEF;
+        .btn-cancel {
+            background: #F8F9FA;
+            border: 2px solid #E0E6ED;
         }
 
         .btn-save {
-            padding: 10px 20px;
             background: linear-gradient(135deg, #0066CC 0%, #00D9FF 100%);
             color: white;
             border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-save:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
-        }
-
-        .btn-save:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
         }
     `;
 
     static properties = {
         consultas: { type: Array },
         pacientes: { type: Array },
+        medicos: { type: Array },
         loading: { type: Boolean },
         showModal: { type: Boolean },
         editingConsulta: { type: Object },
-        saving: { type: Boolean },
-        isAdmin: { type: Boolean }
+        saving: { type: Boolean }
     };
 
     constructor() {
         super();
         this.consultas = [];
         this.pacientes = [];
+        this.medicos = [];
         this.loading = true;
         this.showModal = false;
         this.editingConsulta = null;
         this.saving = false;
-        this.isAdmin = false;
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
         this.loadData();
     }
 
     async loadData() {
         try {
-            const currentUser = authService.getCurrentUser();
-            
-            if (this.isAdmin) {
-                const [consultasData, pacientesData] = await Promise.all([
-                    apiService.getConsultas(),
-                    apiService.getPacientes()
-                ]);
-                this.consultas = consultasData;
-                this.pacientes = pacientesData;
-            } else if (currentUser.idMedico) {
-                const [consultasData, pacientesData] = await Promise.all([
-                    apiService.getConsultasByMedico(currentUser.idMedico),
-                    apiService.getPacientes()
-                ]);
-                this.consultas = consultasData;
-                this.pacientes = pacientesData;
-            }
+            const [consultasData, pacientesData, medicosData] = await Promise.all([
+                apiService.getConsultas(),
+                apiService.getPacientes(),
+                apiService.getMedicos()
+            ]);
+            this.consultas = consultasData;
+            this.pacientes = pacientesData;
+            this.medicos = medicosData;
         } catch (error) {
-            console.error('Error al cargar datos:', error);
-            this.showNotification('Error al cargar datos', 'error');
+            console.error('Error:', error);
+            alert('Error al cargar datos');
         } finally {
             this.loading = false;
         }
@@ -257,12 +199,9 @@ class ConsultasManager extends LitElement {
 
     async handleSubmit(e) {
         e.preventDefault();
-        
         const form = e.target;
-        const currentUser = authService.getCurrentUser();
-        
         const data = {
-            idMedico: currentUser.idMedico,
+            idMedico: parseInt(form.medico.value),
             idPaciente: parseInt(form.paciente.value),
             fechaConsulta: form.fecha.value,
             hi: form.horaInicio.value,
@@ -271,121 +210,87 @@ class ConsultasManager extends LitElement {
         };
 
         this.saving = true;
-
         try {
             if (this.editingConsulta) {
                 await apiService.updateConsulta(this.editingConsulta.IdConsulta, data);
-                this.showNotification('Consulta actualizada exitosamente', 'success');
             } else {
                 await apiService.createConsulta(data);
-                this.showNotification('Consulta creada exitosamente', 'success');
             }
-
             this.closeModal();
             this.loadData();
         } catch (error) {
-            console.error('Error:', error);
-            this.showNotification('Error al guardar consulta', 'error');
+            alert('Error al guardar');
         } finally {
             this.saving = false;
         }
     }
 
     async handleDelete(e) {
-        const consulta = e.detail.item;
-        
-        if (confirm(`¿Estás seguro de eliminar esta consulta?`)) {
+        if (confirm('¿Eliminar consulta?')) {
             try {
-                await apiService.deleteConsulta(consulta.IdConsulta);
-                this.showNotification('Consulta eliminada exitosamente', 'success');
+                await apiService.deleteConsulta(e.detail.item.IdConsulta);
                 this.loadData();
             } catch (error) {
                 console.error('Error:', error);
-                this.showNotification('Error al eliminar consulta', 'error');
             }
         }
     }
 
-    showNotification(message, type) {
-        alert(message);
-    }
-
     renderModal() {
         if (!this.showModal) return '';
-
         const consulta = this.editingConsulta;
 
         return html`
             <div class="modal-overlay" @click=${this.closeModal}>
                 <div class="modal-content" @click=${(e) => e.stopPropagation()}>
                     <div class="modal-header">
-                        <h3 class="modal-title">
-                            ${consulta ? 'Editar Consulta' : 'Nueva Consulta'}
-                        </h3>
-                        <button class="btn-close" @click=${this.closeModal}>
-                            <i class="bi bi-x-lg"></i>
-                        </button>
+                        <h3 class="modal-title">${consulta ? 'Editar' : 'Nueva'} Consulta</h3>
+                        <button class="btn-close" @click=${this.closeModal}>✕</button>
                     </div>
-
                     <form @submit=${this.handleSubmit}>
                         <div class="form-grid">
                             <div class="form-group">
-                                <label>Paciente *</label>
-                                <select name="paciente" required>
-                                    <option value="">Selecciona un paciente</option>
-                                    ${this.pacientes.map(p => html`
-                                        <option 
-                                            value="${p.IdPaciente}"
-                                            ?selected=${consulta?.IdPaciente === p.IdPaciente}>
-                                            ${p.Nombre} - ${p.Cedula}
+                                <label>Médico *</label>
+                                <select name="medico" required>
+                                    <option value="">Selecciona</option>
+                                    ${this.medicos.map(m => html`
+                                        <option value="${m.IdMedico}" ?selected=${consulta?.IdMedico === m.IdMedico}>
+                                            ${m.Nombre}
                                         </option>
                                     `)}
                                 </select>
                             </div>
-
+                            <div class="form-group">
+                                <label>Paciente *</label>
+                                <select name="paciente" required>
+                                    <option value="">Selecciona</option>
+                                    ${this.pacientes.map(p => html`
+                                        <option value="${p.IdPaciente}" ?selected=${consulta?.IdPaciente === p.IdPaciente}>
+                                            ${p.Nombre}
+                                        </option>
+                                    `)}
+                                </select>
+                            </div>
                             <div class="form-group">
                                 <label>Fecha *</label>
-                                <input 
-                                    type="date" 
-                                    name="fecha" 
-                                    .value=${consulta?.FechaConsulta?.split('T')[0] || ''}
-                                    required>
+                                <input type="date" name="fecha" .value=${consulta?.FechaConsulta?.split('T')[0] || ''} required>
                             </div>
-
                             <div class="form-group">
                                 <label>Hora Inicio *</label>
-                                <input 
-                                    type="time" 
-                                    name="horaInicio" 
-                                    .value=${consulta?.HI || ''}
-                                    required>
+                                <input type="time" name="horaInicio" .value=${consulta?.HI || ''} required>
                             </div>
-
                             <div class="form-group">
                                 <label>Hora Fin *</label>
-                                <input 
-                                    type="time" 
-                                    name="horaFin" 
-                                    .value=${consulta?.HF || ''}
-                                    required>
+                                <input type="time" name="horaFin" .value=${consulta?.HF || ''} required>
                             </div>
-
                             <div class="form-group full-width">
                                 <label>Diagnóstico *</label>
-                                <textarea 
-                                    name="diagnostico" 
-                                    placeholder="Ingrese el diagnóstico detallado..."
-                                    required>${consulta?.Diagnostico || ''}</textarea>
+                                <textarea name="diagnostico" required>${consulta?.Diagnostico || ''}</textarea>
                             </div>
                         </div>
-
                         <div class="modal-footer">
-                            <button type="button" class="btn-cancel" @click=${this.closeModal}>
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn-save" ?disabled=${this.saving}>
-                                ${this.saving ? 'Guardando...' : 'Guardar'}
-                            </button>
+                            <button type="button" class="btn-cancel" @click=${this.closeModal}>Cancelar</button>
+                            <button type="submit" class="btn-save" ?disabled=${this.saving}>Guardar</button>
                         </div>
                     </form>
                 </div>
@@ -395,38 +300,29 @@ class ConsultasManager extends LitElement {
 
     render() {
         if (this.loading) {
-            return html`<loading-spinner text="Cargando consultas..."></loading-spinner>`;
+            return html`<loading-spinner text="Cargando..."></loading-spinner>`;
         }
 
         const columns = [
             { header: 'ID', field: 'IdConsulta' },
+            { header: 'Médico', field: 'NombreMedico' },
             { header: 'Paciente', field: 'NombrePaciente' },
-            { 
-                header: 'Fecha', 
-                field: 'FechaConsulta',
-                render: (fecha) => new Date(fecha).toLocaleDateString('es-ES')
-            },
+            { header: 'Fecha', field: 'FechaConsulta', render: (f) => new Date(f).toLocaleDateString('es-ES') },
             { header: 'Hora Inicio', field: 'HI' },
-            { header: 'Hora Fin', field: 'HF' },
-            { 
-                header: 'Diagnóstico', 
-                field: 'Diagnostico',
-                render: (diag) => diag.length > 50 ? diag.substring(0, 50) + '...' : diag
-            }
+            { header: 'Hora Fin', field: 'HF' }
         ];
 
         return html`
             <div class="page-header">
                 <h1 class="page-title">
                     <i class="bi bi-calendar-check"></i>
-                    ${this.isAdmin ? 'Todas las Consultas' : 'Mis Consultas'}
+                    Todas las Consultas
                 </h1>
                 <button class="btn-add" @click=${this.openCreateModal}>
                     <i class="bi bi-plus-circle"></i>
                     Nueva Consulta
                 </button>
             </div>
-
             <data-table
                 title="Registro de Consultas Médicas"
                 .columns=${columns}
@@ -434,10 +330,9 @@ class ConsultasManager extends LitElement {
                 @edit=${this.openEditModal}
                 @delete=${this.handleDelete}>
             </data-table>
-
             ${this.renderModal()}
         `;
     }
 }
 
-customElements.define('consultas-manager', ConsultasManager);
+customElements.define('admin-consultas', AdminConsultas);

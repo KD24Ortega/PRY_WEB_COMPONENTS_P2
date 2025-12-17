@@ -322,3 +322,14 @@ exports.verifySession = async (req, res) => {
         res.status(500).json({ error: 'Error al verificar sesión' });
     }
 };
+
+// Obtener especialidades (endpoint público para registro)
+exports.getEspecialidadesPublic = async (req, res) => {
+    try {
+        const especialidades = await query('SELECT * FROM especialidades ORDER BY Descripcion');
+        res.json(especialidades);
+    } catch (error) {
+        console.error('Error al obtener especialidades:', error);
+        res.status(500).json({ error: 'Error al obtener especialidades' });
+    }
+};

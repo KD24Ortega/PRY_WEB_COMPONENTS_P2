@@ -242,7 +242,7 @@ class RegisterComponent extends LitElement {
 
     async loadEspecialidades() {
         try {
-            this.especialidades = await apiService.getEspecialidades();
+            this.especialidades = await apiService.getEspecialidadesPublic();  
         } catch (error) {
             console.error('Error al cargar especialidades:', error);
         }
