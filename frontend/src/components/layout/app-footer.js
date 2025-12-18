@@ -71,11 +71,6 @@ class AppFooter extends LitElement {
                     <div class="copyright">
                         © ${currentYear} Sistema Clínico. Todos los derechos reservados.
                     </div>
-                    <div class="footer-links">
-                        <a href="#" class="footer-link">Soporte</a>
-                        <a href="#" class="footer-link">Documentación</a>
-                        <a href="#" class="footer-link">Contacto</a>
-                    </div>
                     <div class="version">
                         <i class="bi bi-code-square me-1"></i>
                         Versión 1.0.0

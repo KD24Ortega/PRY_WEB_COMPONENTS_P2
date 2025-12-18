@@ -1,9 +1,13 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 
 class DataTable extends LitElement {
     static styles = css`
         :host {
             display: block;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         .table-container {
@@ -38,14 +42,23 @@ class DataTable extends LitElement {
         .search-box {
             flex: 1;
             min-width: 250px;
+            position: relative;
         }
 
         .search-input {
             width: 100%;
-            padding: 10px 15px 10px 40px;
+            padding: 10px 15px;
             border: 2px solid #E0E6ED;
             border-radius: 8px;
             font-size: 0.95rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #0066CC;
+            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
         }
 
         .search-icon {
@@ -77,6 +90,7 @@ class DataTable extends LitElement {
             text-transform: uppercase;
             font-size: 0.85rem;
             letter-spacing: 0.5px;
+            white-space: nowrap;
         }
 
         tbody tr {
@@ -86,6 +100,10 @@ class DataTable extends LitElement {
 
         tbody tr:hover {
             background: rgba(0, 102, 204, 0.02);
+        }
+
+        tbody tr:last-child {
+            border-bottom: none;
         }
 
         td {
@@ -112,15 +130,27 @@ class DataTable extends LitElement {
         .action-buttons {
             display: flex;
             gap: 8px;
+            justify-content: flex-start;
         }
 
         .btn-icon {
-            padding: 6px 10px;
+            padding: 8px 12px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
             font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-icon:active {
+            transform: translateY(0);
         }
 
         .btn-edit {
@@ -130,7 +160,7 @@ class DataTable extends LitElement {
 
         .btn-edit:hover {
             background: #FFB300;
-            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(255, 193, 7, 0.3);
         }
 
         .btn-delete {
@@ -140,7 +170,7 @@ class DataTable extends LitElement {
 
         .btn-delete:hover {
             background: #C82333;
-            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
         }
 
         .btn-view {
@@ -150,7 +180,27 @@ class DataTable extends LitElement {
 
         .btn-view:hover {
             background: #138496;
-            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .table-actions {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .action-buttons {
+                flex-wrap: wrap;
+            }
+
+            .btn-icon {
+                padding: 6px 10px;
+                font-size: 0.85rem;
+            }
         }
     `;
 
@@ -211,7 +261,7 @@ class DataTable extends LitElement {
         const filteredData = this.getFilteredData();
 
         return html`
-         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
        
             <div class="table-container">
                 <div class="table-header">
@@ -219,7 +269,7 @@ class DataTable extends LitElement {
                 </div>
 
                 <div class="table-actions">
-                    <div class="search-box position-relative">
+                    <div class="search-box">
                         <input 
                             type="text" 
                             class="search-input"

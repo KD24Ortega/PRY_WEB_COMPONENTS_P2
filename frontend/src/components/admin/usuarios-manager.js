@@ -9,6 +9,10 @@ class UsuariosManager extends LitElement {
             display: block;
         }
 
+        * {
+            box-sizing: border-box;
+        }
+
         .page-header {
             display: flex;
             justify-content: space-between;
@@ -32,6 +36,7 @@ class UsuariosManager extends LitElement {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+            margin-bottom: 20px;
         }
 
         .filter-btn {
@@ -95,6 +100,9 @@ class UsuariosManager extends LitElement {
             font-size: 1.5rem;
             font-weight: 600;
             color: #0066CC;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .btn-close {
@@ -104,6 +112,8 @@ class UsuariosManager extends LitElement {
             cursor: pointer;
             color: #5A7C92;
             transition: all 0.3s ease;
+            padding: 0;
+            min-width: auto;
         }
 
         .btn-close:hover {
@@ -129,6 +139,7 @@ class UsuariosManager extends LitElement {
             border-radius: 8px;
             font-size: 0.95rem;
             transition: all 0.3s ease;
+            font-family: inherit;
         }
 
         input:focus {
@@ -161,7 +172,7 @@ class UsuariosManager extends LitElement {
             background: #E9ECEF;
         }
 
-        .btn-save {
+        .btn-save, .btn-confirm {
             padding: 10px 20px;
             background: linear-gradient(135deg, #0066CC 0%, #00D9FF 100%);
             color: white;
@@ -172,7 +183,7 @@ class UsuariosManager extends LitElement {
             transition: all 0.3s ease;
         }
 
-        .btn-save:hover {
+        .btn-save:hover, .btn-confirm:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
         }
@@ -180,9 +191,19 @@ class UsuariosManager extends LitElement {
         .btn-save:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #DC3545 0%, #C82333 100%);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
         }
 
         .role-badge {
+            display: inline-block;
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.85rem;
@@ -214,8 +235,13 @@ class UsuariosManager extends LitElement {
         .info-row {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             margin-bottom: 8px;
             font-size: 0.9rem;
+        }
+
+        .info-row:last-child {
+            margin-bottom: 0;
         }
 
         .info-label {
@@ -225,6 +251,80 @@ class UsuariosManager extends LitElement {
 
         .info-value {
             color: #2C5282;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 3000;
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .notification.success {
+            background: #28a745;
+            color: white;
+        }
+
+        .notification.error {
+            background: #dc3545;
+            color: white;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .detail-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #5A7C92;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            color: #2C5282;
+            padding: 10px;
+            background: #F8F9FA;
+            border-radius: 6px;
+        }
+
+        .warning-text {
+            margin-bottom: 15px;
+            color: #2C5282;
+            line-height: 1.5;
+        }
+
+        .danger-text {
+            margin-bottom: 0;
+            color: #DC3545;
+            font-size: 0.9rem;
         }
     `;
 
@@ -236,7 +336,8 @@ class UsuariosManager extends LitElement {
         modalType: { type: String },
         selectedUsuario: { type: Object },
         saving: { type: Boolean },
-        roleFilter: { type: String }
+        roleFilter: { type: String },
+        notification: { type: Object }
     };
 
     constructor() {
@@ -249,6 +350,7 @@ class UsuariosManager extends LitElement {
         this.selectedUsuario = null;
         this.saving = false;
         this.roleFilter = 'ALL';
+        this.notification = null;
         this.loadUsuarios();
     }
 
@@ -277,9 +379,21 @@ class UsuariosManager extends LitElement {
         this.applyFilter();
     }
 
+    openViewModal(e) {
+        this.selectedUsuario = e.detail.item;
+        this.modalType = 'view';
+        this.showModal = true;
+    }
+
     openResetPasswordModal(e) {
         this.selectedUsuario = e.detail.item;
         this.modalType = 'reset-password';
+        this.showModal = true;
+    }
+
+    openDeleteModal(e) {
+        this.selectedUsuario = e.detail.item;
+        this.modalType = 'delete';
         this.showModal = true;
     }
 
@@ -309,42 +423,109 @@ class UsuariosManager extends LitElement {
         }
     }
 
-    async handleDelete(e) {
-        const usuario = e.detail.item;
+    async handleDeleteConfirm() {
+        const usuario = this.selectedUsuario;
         
         if (usuario.usuario === 'admin') {
             this.showNotification('No se puede eliminar el administrador principal', 'error');
+            this.closeModal();
             return;
         }
 
-        if (confirm(`¿Estás seguro de eliminar al usuario "${usuario.usuario}"? Esta acción eliminará también su registro asociado.`)) {
-            try {
-                await apiService.deleteUsuario(usuario.idUsuario);
-                this.showNotification('Usuario eliminado exitosamente', 'success');
-                this.loadUsuarios();
-            } catch (error) {
-                console.error('Error:', error);
-                this.showNotification('Error al eliminar usuario', 'error');
-            }
+        this.saving = true;
+
+        try {
+            await apiService.deleteUsuario(usuario.idUsuario);
+            this.showNotification('Usuario eliminado exitosamente', 'success');
+            this.closeModal();
+            this.loadUsuarios();
+        } catch (error) {
+            console.error('Error:', error);
+            this.showNotification('Error al eliminar usuario', 'error');
+        } finally {
+            this.saving = false;
         }
     }
 
     showNotification(message, type) {
-        alert(message);
+        this.notification = { message, type };
+        setTimeout(() => {
+            this.notification = null;
+        }, 3000);
+    }
+
+    renderNotification() {
+        if (!this.notification) return '';
+
+        return html`
+            <div class="notification ${this.notification.type}">
+                <i class="bi bi-${this.notification.type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+                ${this.notification.message}
+            </div>
+        `;
     }
 
     renderModal() {
         if (!this.showModal) return '';
 
+        if (this.modalType === 'view') {
+            return html`
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+                
+                <div class="modal-overlay" @click=${this.closeModal}>
+                    <div class="modal-content" @click=${(e) => e.stopPropagation()}>
+                        <div class="modal-header">
+                            <h3 class="modal-title">
+                                <i class="bi bi-person-circle"></i>
+                                Detalles del Usuario
+                            </h3>
+                            <button class="btn-close" @click=${this.closeModal}>
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <span class="detail-label">ID</span>
+                                <span class="detail-value">${this.selectedUsuario?.idUsuario}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Usuario</span>
+                                <span class="detail-value">${this.selectedUsuario?.usuario}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Nombre</span>
+                                <span class="detail-value">${this.selectedUsuario?.nombre}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Rol</span>
+                                <span class="detail-value">
+                                    <span class="role-badge role-${this.selectedUsuario?.rol?.toLowerCase()}">
+                                        ${this.selectedUsuario?.rol}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button class="btn-cancel" @click=${this.closeModal}>
+                                Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         if (this.modalType === 'reset-password') {
             return html`
-             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
        
                 <div class="modal-overlay" @click=${this.closeModal}>
                     <div class="modal-content" @click=${(e) => e.stopPropagation()}>
                         <div class="modal-header">
                             <h3 class="modal-title">
-                                <i class="bi bi-key me-2"></i>
+                                <i class="bi bi-key"></i>
                                 Restablecer Contraseña
                             </h3>
                             <button class="btn-close" @click=${this.closeModal}>
@@ -394,16 +575,54 @@ class UsuariosManager extends LitElement {
             `;
         }
 
+        if (this.modalType === 'delete') {
+            return html`
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
+                <div class="modal-overlay" @click=${this.closeModal}>
+                    <div class="modal-content" @click=${(e) => e.stopPropagation()}>
+                        <div class="modal-header">
+                            <h3 class="modal-title">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                Confirmar Eliminación
+                            </h3>
+                            <button class="btn-close" @click=${this.closeModal}>
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+
+                        <div class="user-info">
+                            <p class="warning-text">
+                                ¿Estás seguro de eliminar al usuario <strong>"${this.selectedUsuario?.usuario}"</strong>?
+                            </p>
+                            <p class="danger-text">
+                                <i class="bi bi-exclamation-circle"></i>
+                                Esta acción eliminará también su registro asociado y no se puede deshacer.
+                            </p>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button class="btn-cancel" @click=${this.closeModal}>
+                                Cancelar
+                            </button>
+                            <button class="btn-confirm btn-danger" @click=${this.handleDeleteConfirm} ?disabled=${this.saving}>
+                                ${this.saving ? 'Eliminando...' : 'Eliminar'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         return '';
     }
 
     render() {
         if (this.loading) {
-            return html`<
-             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
-       
-            loading-spinner text="Cargando usuarios..."></loading-spinner>
-        `;
+            return html`
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+                <loading-spinner text="Cargando usuarios..."></loading-spinner>
+            `;
         }
 
         const columns = [
@@ -422,7 +641,7 @@ class UsuariosManager extends LitElement {
         ];
 
         return html`
-         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
        
             <div class="page-header">
                 <h1 class="page-title">
@@ -458,11 +677,13 @@ class UsuariosManager extends LitElement {
                 title="Listado de Usuarios del Sistema"
                 .columns=${columns}
                 .data=${this.filteredUsuarios}
-                @view=${this.openResetPasswordModal}
-                @delete=${this.handleDelete}>
+                @view=${this.openViewModal}
+                @edit=${this.openResetPasswordModal}
+                @delete=${this.openDeleteModal}>
             </data-table>
 
             ${this.renderModal()}
+            ${this.renderNotification()}
         `;
     }
 }

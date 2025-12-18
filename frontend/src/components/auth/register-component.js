@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 import authService from '../../services/auth.service.js';
 import apiService from '../../services/api.service.js';
 
@@ -8,6 +8,10 @@ class RegisterComponent extends LitElement {
             display: block;
             width: 100%;
             max-width: 600px;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         .register-card {
@@ -102,7 +106,7 @@ class RegisterComponent extends LitElement {
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 0;
         }
 
         .form-group.full-width {
@@ -128,12 +132,18 @@ class RegisterComponent extends LitElement {
             border-radius: 12px;
             font-size: 0.95rem;
             transition: all 0.3s ease;
+            font-family: inherit;
         }
 
         input:focus, select:focus {
             outline: none;
             border-color: #0066CC;
             box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+        }
+
+        input:disabled, select:disabled {
+            background: #F8F9FA;
+            cursor: not-allowed;
         }
 
         .btn-register {
@@ -148,17 +158,24 @@ class RegisterComponent extends LitElement {
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .btn-register:hover {
+        .btn-register:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 102, 204, 0.3);
+        }
+
+        .btn-register:active:not(:disabled) {
+            transform: translateY(0);
         }
 
         .btn-register:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
         }
 
         .login-link {
@@ -180,22 +197,19 @@ class RegisterComponent extends LitElement {
         }
 
         .alert {
-            padding: 12px;
+            padding: 12px 15px;
             border-radius: 8px;
             margin-bottom: 20px;
             font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .alert-danger {
             background: rgba(220, 53, 69, 0.1);
             color: #721c24;
             border: 1px solid rgba(220, 53, 69, 0.3);
-        }
-
-        .alert-success {
-            background: rgba(40, 167, 69, 0.1);
-            color: #155724;
-            border: 1px solid rgba(40, 167, 69, 0.3);
         }
 
         .loading {
@@ -220,13 +234,130 @@ class RegisterComponent extends LitElement {
             padding-bottom: 10px;
             border-bottom: 2px solid #E0E6ED;
         }
+
+        /* Modal de éxito */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .success-icon i {
+            font-size: 3rem;
+            color: white;
+        }
+
+        .modal-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .modal-text {
+            color: #5A7C92;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .btn-modal {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #0066CC 0%, #00D9FF 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-modal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+        }
+
+        .countdown {
+            margin-top: 15px;
+            color: #5A7C92;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .register-card {
+                padding: 30px 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .logo {
+                font-size: 3rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
     `;
 
     static properties = {
         selectedRole: { type: String },
         loading: { type: Boolean },
         error: { type: String },
-        success: { type: Boolean },
+        showSuccessModal: { type: Boolean },
+        countdown: { type: Number },
         especialidades: { type: Array }
     };
 
@@ -235,8 +366,10 @@ class RegisterComponent extends LitElement {
         this.selectedRole = '';
         this.loading = false;
         this.error = '';
-        this.success = false;
+        this.showSuccessModal = false;
+        this.countdown = 3;
         this.especialidades = [];
+        this.countdownInterval = null;
         this.loadEspecialidades();
     }
 
@@ -261,7 +394,6 @@ class RegisterComponent extends LitElement {
         const password = form.password.value;
         const confirmPassword = form.confirmPassword.value;
 
-        // Validaciones
         if (!this.selectedRole) {
             this.error = 'Por favor, selecciona un tipo de usuario';
             return;
@@ -277,7 +409,6 @@ class RegisterComponent extends LitElement {
             return;
         }
 
-        // Preparar datos según el rol
         const datosPersonales = {};
 
         switch (this.selectedRole) {
@@ -314,10 +445,8 @@ class RegisterComponent extends LitElement {
                 datosPersonales
             });
 
-            this.success = true;
-            setTimeout(() => {
-                this.goToLogin();
-            }, 2000);
+            this.showSuccessModal = true;
+            this.startCountdown();
         } catch (error) {
             console.error('Error en registro:', error);
             this.error = error.message || 'Error al registrar usuario';
@@ -326,10 +455,57 @@ class RegisterComponent extends LitElement {
         }
     }
 
+    startCountdown() {
+        this.countdown = 3;
+        this.countdownInterval = setInterval(() => {
+            this.countdown--;
+            if (this.countdown <= 0) {
+                clearInterval(this.countdownInterval);
+                this.goToLogin();
+            }
+        }, 1000);
+    }
+
     goToLogin() {
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+        }
         window.dispatchEvent(new CustomEvent('navigate', {
             detail: { view: 'login' }
         }));
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+        }
+    }
+
+    renderSuccessModal() {
+        if (!this.showSuccessModal) return '';
+
+        return html`
+            <div class="modal-overlay">
+                <div class="modal-content">
+                    <div class="success-icon">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <h3 class="modal-title">¡Usuario creado correctamente!</h3>
+                    <p class="modal-text">
+                        Tu cuenta ha sido creada exitosamente.<br>
+                        Ya puedes iniciar sesión con tus credenciales.
+                    </p>
+                    <button class="btn-modal" @click=${this.goToLogin}>
+                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                        Ir al Login
+                    </button>
+                    <p class="countdown">
+                        Redirigiendo automáticamente en ${this.countdown}s...
+                    </p>
+                </div>
+            </div>
+        `;
     }
 
     renderRoleSpecificFields() {
@@ -340,7 +516,7 @@ class RegisterComponent extends LitElement {
                     <div class="form-grid">
                         <div class="form-group full-width">
                             <label>Nombre Completo <span class="required">*</span></label>
-                            <input type="text" name="nombre" placeholder="Dr. Juan Pérez" required>
+                            <input type="text" name="nombre" placeholder="Ingrese su nombre" required>
                         </div>
                         <div class="form-group full-width">
                             <label>Especialidad <span class="required">*</span></label>
@@ -360,15 +536,15 @@ class RegisterComponent extends LitElement {
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Nombre Completo <span class="required">*</span></label>
-                            <input type="text" name="nombre" placeholder="Juan Pérez" required>
+                            <input type="text" name="nombre" placeholder="Ingrese su nombre" required>
                         </div>
                         <div class="form-group">
                             <label>Cédula <span class="required">*</span></label>
-                            <input type="text" name="cedula" placeholder="1234567890" required>
+                            <input type="text" name="cedula" placeholder="Ingrese su cédula" required>
                         </div>
                         <div class="form-group">
                             <label>Edad</label>
-                            <input type="number" name="edad" min="0" max="150" placeholder="30">
+                            <input type="number" name="edad" min="0" max="150" placeholder="Ingrese su edad">
                         </div>
                         <div class="form-group">
                             <label>Género</label>
@@ -380,30 +556,14 @@ class RegisterComponent extends LitElement {
                         </div>
                         <div class="form-group">
                             <label>Estatura (cm)</label>
-                            <input type="number" name="estatura" min="0" max="300" placeholder="170">
+                            <input type="number" name="estatura" min="0" max="300" placeholder="Ingrese su estatura en cm">
                         </div>
                         <div class="form-group">
                             <label>Peso (kg)</label>
-                            <input type="number" name="peso" min="0" max="500" step="0.1" placeholder="70">
+                            <input type="number" name="peso" min="0" max="500" step="0.1" placeholder="Ingrese su peso en kg">
                         </div>
                     </div>
                 `;
-
-            case 'ADMIN':
-                return html`
-                    <div class="section-title">Datos del Administrador</div>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Nombre Completo <span class="required">*</span></label>
-                            <input type="text" name="nombre" placeholder="María García" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Correo Electrónico <span class="required">*</span></label>
-                            <input type="email" name="correo" placeholder="admin@clinica.com" required>
-                        </div>
-                    </div>
-                `;
-
             default:
                 return '';
         }
@@ -411,7 +571,7 @@ class RegisterComponent extends LitElement {
 
     render() {
         return html`
-         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
        
             <div class="register-card">
                 <div class="logo-container">
@@ -422,15 +582,8 @@ class RegisterComponent extends LitElement {
 
                 ${this.error ? html`
                     <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        ${this.error}
-                    </div>
-                ` : ''}
-
-                ${this.success ? html`
-                    <div class="alert alert-success">
-                        <i class="bi bi-check-circle me-2"></i>
-                        ¡Registro exitoso! Redirigiendo al login...
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span>${this.error}</span>
                     </div>
                 ` : ''}
 
@@ -447,7 +600,6 @@ class RegisterComponent extends LitElement {
                             <div class="role-icon">🧑</div>
                             <div class="role-name">Paciente</div>
                         </div>
-                        
                     </div>
 
                     ${this.selectedRole ? html`
@@ -455,7 +607,7 @@ class RegisterComponent extends LitElement {
                         <div class="form-grid">
                             <div class="form-group">
                                 <label>Usuario <span class="required">*</span></label>
-                                <input type="text" name="usuario" placeholder="usuario123" required>
+                                <input type="text" name="usuario" placeholder="Ingrese su usuario" required>
                             </div>
                             <div class="form-group">
                                 <label>Contraseña <span class="required">*</span></label>
@@ -469,13 +621,13 @@ class RegisterComponent extends LitElement {
 
                         ${this.renderRoleSpecificFields()}
 
-                        <button type="submit" class="btn-register" ?disabled=${this.loading || this.success}>
+                        <button type="submit" class="btn-register" ?disabled=${this.loading}>
                             ${this.loading ? html`
                                 <span class="loading"></span>
-                                <span class="ms-2">Registrando...</span>
+                                <span>Registrando...</span>
                             ` : html`
-                                <i class="bi bi-person-plus me-2"></i>
-                                Registrarse
+                                <i class="bi bi-person-plus"></i>
+                                <span>Registrarse</span>
                             `}
                         </button>
                     ` : ''}
@@ -486,6 +638,8 @@ class RegisterComponent extends LitElement {
                     <a @click=${this.goToLogin}>Inicia sesión aquí</a>
                 </div>
             </div>
+
+            ${this.renderSuccessModal()}
         `;
     }
 }

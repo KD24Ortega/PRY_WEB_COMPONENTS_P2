@@ -1,9 +1,13 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 
 class LoadingSpinner extends LitElement {
     static styles = css`
         :host {
-            display: block;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 400px;
+            width: 100%;
         }
 
         .spinner-container {
@@ -31,6 +35,7 @@ class LoadingSpinner extends LitElement {
             margin-top: 20px;
             color: #5A7C92;
             font-size: 1rem;
+            font-weight: 500;
         }
     `;
 
@@ -45,7 +50,7 @@ class LoadingSpinner extends LitElement {
 
     render() {
         return html`
-         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
        
             <div class="spinner-container">
                 <div class="spinner"></div>

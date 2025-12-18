@@ -24,3 +24,4 @@ npm run start
 
 cd .\frontend\
  npx http-server . -p 8080
+

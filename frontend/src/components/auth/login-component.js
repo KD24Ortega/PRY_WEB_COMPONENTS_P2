@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 import authService from '../../services/auth.service.js';
 
 class LoginComponent extends LitElement {
@@ -7,6 +7,10 @@ class LoginComponent extends LitElement {
             display: block;
             width: 100%;
             max-width: 450px;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         .login-card {
@@ -77,6 +81,8 @@ class LoginComponent extends LitElement {
             transform: translateY(-50%);
             color: #0066CC;
             font-size: 1.2rem;
+            pointer-events: none;
+            z-index: 1;
         }
 
         input {
@@ -86,12 +92,18 @@ class LoginComponent extends LitElement {
             border-radius: 12px;
             font-size: 1rem;
             transition: all 0.3s ease;
+            font-family: inherit;
         }
 
         input:focus {
             outline: none;
             border-color: #0066CC;
             box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+        }
+
+        input:disabled {
+            background: #F8F9FA;
+            cursor: not-allowed;
         }
 
         .btn-login {
@@ -106,21 +118,24 @@ class LoginComponent extends LitElement {
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
-        .btn-login:hover {
+        .btn-login:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 102, 204, 0.3);
         }
 
-        .btn-login:active {
+        .btn-login:active:not(:disabled) {
             transform: translateY(0);
         }
 
         .btn-login:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
         }
 
         .register-link {
@@ -142,10 +157,13 @@ class LoginComponent extends LitElement {
         }
 
         .alert {
-            padding: 12px;
+            padding: 12px 15px;
             border-radius: 8px;
             margin-bottom: 20px;
             font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .alert-danger {
@@ -179,8 +197,11 @@ class LoginComponent extends LitElement {
         .demo-credentials h4 {
             font-size: 0.85rem;
             color: #0066CC;
-            margin-bottom: 10px;
+            margin: 0 0 10px 0;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .demo-credentials p {
@@ -193,7 +214,23 @@ class LoginComponent extends LitElement {
             background: rgba(0, 102, 204, 0.1);
             padding: 2px 8px;
             border-radius: 4px;
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #0066CC;
+        }
+
+        @media (max-width: 480px) {
+            .login-card {
+                padding: 30px 20px;
+            }
+
+            .logo {
+                font-size: 3rem;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
         }
     `;
 
@@ -242,13 +279,12 @@ class LoginComponent extends LitElement {
     }
 
     showNotification(message, type) {
-        // Este método será implementado globalmente más adelante
         console.log(`${type}: ${message}`);
     }
 
     render() {
         return html`
-         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
        
             <div class="login-card">
                 <div class="logo-container">
@@ -265,8 +301,8 @@ class LoginComponent extends LitElement {
 
                 ${this.error ? html`
                     <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        ${this.error}
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <span>${this.error}</span>
                     </div>
                 ` : ''}
 
@@ -302,10 +338,10 @@ class LoginComponent extends LitElement {
                     <button type="submit" class="btn-login" ?disabled=${this.loading}>
                         ${this.loading ? html`
                             <span class="loading"></span>
-                            <span class="ms-2">Ingresando...</span>
+                            <span>Ingresando...</span>
                         ` : html`
-                            <i class="bi bi-box-arrow-in-right me-2"></i>
-                            Ingresar
+                            <i class="bi bi-box-arrow-in-right"></i>
+                            <span>Ingresar</span>
                         `}
                     </button>
                 </form>
