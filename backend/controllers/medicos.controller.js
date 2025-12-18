@@ -39,11 +39,11 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
     try {
-        const { nombre, idEspecialidad, foto } = req.body;
+        const { nombre, idEspecialidad } = req.body;
         
         const result = await query(
-            'INSERT INTO medicos (Nombre, IdEspecialidad, Foto) VALUES (?, ?, ?)',
-            [nombre, idEspecialidad, foto || 'default.jpg']
+            'INSERT INTO medicos (Nombre, IdEspecialidad) VALUES (?, ?)',
+            [nombre, idEspecialidad]
         );
         
         res.status(201).json({ 
@@ -59,11 +59,11 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, idEspecialidad, foto } = req.body;
+        const { nombre, idEspecialidad } = req.body;
         
         await query(
-            'UPDATE medicos SET Nombre = ?, IdEspecialidad = ?, Foto = ? WHERE IdMedico = ?',
-            [nombre, idEspecialidad, foto, id]
+            'UPDATE medicos SET Nombre = ?, IdEspecialidad = ? WHERE IdMedico = ?',
+            [nombre, idEspecialidad, id]
         );
         
         res.json({ message: 'Médico actualizado exitosamente' });

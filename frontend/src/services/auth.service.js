@@ -1,7 +1,3 @@
-/**
- * Servicio de Autenticación
- */
-
 import apiService from './api.service.js';
 
 class AuthService {
@@ -10,13 +6,11 @@ class AuthService {
         this.loadUserFromStorage();
     }
 
-    // Guardar usuario en localStorage
     saveUserToStorage(user) {
         localStorage.setItem('currentUser', JSON.stringify(user));
         this.currentUser = user;
     }
 
-    // Cargar usuario desde localStorage
     loadUserFromStorage() {
         const userStr = localStorage.getItem('currentUser');
         if (userStr) {
@@ -29,7 +23,6 @@ class AuthService {
         }
     }
 
-    // Limpiar autenticación
     clearAuth() {
         localStorage.removeItem('currentUser');
         localStorage.removeItem('token');
@@ -37,7 +30,6 @@ class AuthService {
         apiService.clearToken();
     }
 
-    // Login
     async login(usuario, password) {
         try {
             const response = await apiService.login(usuario, password);
@@ -53,7 +45,6 @@ class AuthService {
         }
     }
 
-    // Registro
     async register(data) {
         try {
             return await apiService.register(data);
@@ -62,12 +53,10 @@ class AuthService {
         }
     }
 
-    // Logout
     logout() {
         this.clearAuth();
     }
 
-    // Verificar sesión
     async verifySession() {
         try {
             const response = await apiService.verifySession();
@@ -81,27 +70,22 @@ class AuthService {
         }
     }
 
-    // Obtener usuario actual
     getCurrentUser() {
         return this.currentUser;
     }
 
-    // Verificar si está autenticado
     isAuthenticated() {
         return this.currentUser !== null && apiService.getToken() !== null;
     }
 
-    // Verificar rol
     hasRole(rol) {
         return this.currentUser && this.currentUser.rol === rol;
     }
 
-    // Verificar múltiples roles
     hasAnyRole(...roles) {
         return this.currentUser && roles.includes(this.currentUser.rol);
     }
 }
 
-// Exportar instancia única
 const authService = new AuthService();
 export default authService;

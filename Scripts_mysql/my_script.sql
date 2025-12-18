@@ -2,6 +2,7 @@
 -- BASE DE DATOS: ProyectoVeris_Clinica
 -- Motor: MySQL 8.x
 -- Charset recomendado por Oracle
+-- VERSIÓN CORREGIDA - Foto eliminada de médicos y pacientes
 -- =====================================================
 
 DROP DATABASE IF EXISTS ProyectoVeris_Clinica;
@@ -26,13 +27,13 @@ CREATE TABLE especialidades (
 
 -- =====================================================
 -- TABLA: medicos
+-- (Foto eliminada)
 -- =====================================================
 
 CREATE TABLE medicos (
     IdMedico INT AUTO_INCREMENT PRIMARY KEY,
     Nombre VARCHAR(50) NOT NULL,
     IdEspecialidad INT NOT NULL,
-    Foto VARCHAR(20) NOT NULL,
     CONSTRAINT FK_MEDICOS_ESPECIALIDADES
         FOREIGN KEY (IdEspecialidad)
         REFERENCES especialidades(IdEspecialidad)
@@ -42,17 +43,17 @@ CREATE TABLE medicos (
 
 -- =====================================================
 -- TABLA: pacientes
+-- (Foto eliminada)
 -- =====================================================
 
 CREATE TABLE pacientes (
     IdPaciente INT AUTO_INCREMENT PRIMARY KEY,
     Nombre VARCHAR(50) NOT NULL,
-    Cedula INT NOT NULL,
+    Cedula INT NOT NULL UNIQUE,
     Edad INT NOT NULL,
     Genero VARCHAR(50) NOT NULL,
     Estatura INT NOT NULL,
-    Peso DOUBLE NOT NULL,
-    Foto VARCHAR(20) NOT NULL
+    Peso DOUBLE NOT NULL
 ) ENGINE=InnoDB;
 
 -- =====================================================
@@ -72,9 +73,9 @@ CREATE TABLE administradores (
 -- TABLA: usuarios
 -- =====================================================
 -- Un usuario puede ser:
---  MEDICO  -> asociado a medicos
+--  MEDICO    -> asociado a medicos
 --  PACIENTE -> asociado a pacientes
---  ADMIN -> asociado a administradores
+--  ADMIN    -> asociado a administradores
 -- =====================================================
 
 CREATE TABLE usuarios (
@@ -82,6 +83,7 @@ CREATE TABLE usuarios (
     Usuario VARCHAR(50) NOT NULL UNIQUE,
     PasswordHash VARCHAR(255) NOT NULL,
     Rol ENUM('MEDICO', 'PACIENTE', 'ADMIN') NOT NULL,
+    Foto VARCHAR(255) NULL DEFAULT 'default-user.png',
 
     IdMedico INT NULL,
     IdPaciente INT NULL,
@@ -141,6 +143,8 @@ CREATE TABLE consultas (
     CONSTRAINT FK_CONSULTAS_PACIENTES
         FOREIGN KEY (IdPaciente)
         REFERENCES pacientes(IdPaciente)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 -- =====================================================
@@ -160,4 +164,21 @@ CREATE TABLE recetas (
     CONSTRAINT FK_RECETAS_MEDICAMENTOS
         FOREIGN KEY (IdMedicamento)
         REFERENCES medicamentos(IdMedicamento)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
+-- =====================================================
+-- ÍNDICES PARA OPTIMIZACIÓN
+-- =====================================================
+
+CREATE INDEX idx_usuarios_rol ON usuarios(Rol);
+CREATE INDEX idx_usuarios_usuario ON usuarios(Usuario);
+CREATE INDEX idx_pacientes_cedula ON pacientes(Cedula);
+CREATE INDEX idx_consultas_fecha ON consultas(FechaConsulta);
+CREATE INDEX idx_consultas_medico ON consultas(IdMedico);
+CREATE INDEX idx_consultas_paciente ON consultas(IdPaciente);
+
+-- =====================================================
+-- FIN DEL SCRIPT
+-- =====================================================

@@ -1,6 +1,5 @@
 const mysql = require('mysql2');
 
-// Configuración de la conexión a MySQL
 const connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
@@ -9,7 +8,6 @@ const connection = mysql.createConnection({
     charset: 'utf8mb4'
 });
 
-// Conectar a la base de datos
 connection.connect((err) => {
     if (err) {
         console.error('❌ Error al conectar a la base de datos:', err);
@@ -18,7 +16,6 @@ connection.connect((err) => {
     console.log('✅ Conexión exitosa a la base de datos MySQL');
 });
 
-// Función helper para ejecutar queries con promesas
 const query = (sql, params) => {
     return new Promise((resolve, reject) => {
         connection.query(sql, params, (error, results) => {

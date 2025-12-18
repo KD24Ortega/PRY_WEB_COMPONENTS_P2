@@ -192,13 +192,6 @@ class AdminDashboard extends LitElement {
             font-size: 0.95rem;
         }
 
-        .recent-activity {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
-
         .activity-list {
             list-style: none;
             padding: 0;
@@ -401,42 +394,6 @@ class AdminDashboard extends LitElement {
                         <span class="action-text">Consultas</span>
                     </div>
                 </div>
-            </div>
-
-            <div class="recent-activity">
-                <h2 class="section-title">
-                    <i class="bi bi-clock-history me-2"></i>
-                    Actividad Reciente
-                </h2>
-                <ul class="activity-list">
-                    <li class="activity-item">
-                        <div class="activity-icon">
-                            <i class="bi bi-person-plus"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-title">Sistema iniciado correctamente</div>
-                            <div class="activity-time">Hace unos momentos</div>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="activity-icon">
-                            <i class="bi bi-check-circle"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-title">Base de datos conectada</div>
-                            <div class="activity-time">Hace unos momentos</div>
-                        </div>
-                    </li>
-                    <li class="activity-item">
-                        <div class="activity-icon">
-                            <i class="bi bi-shield-check"></i>
-                        </div>
-                        <div class="activity-content">
-                            <div class="activity-title">Sesión de administrador iniciada</div>
-                            <div class="activity-time">Ahora</div>
-                        </div>
-                    </li>
-                </ul>
             </div>
         `;
     }

@@ -287,7 +287,7 @@ class MedicoDashboard extends LitElement {
         return html`
          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
        
-            <div class="dashboard-header">
+            <div class="dashboard-header ">
                 <h1 class="dashboard-title">
                     <i class="bi bi-heart-pulse me-2"></i>
                     Panel del Médico

@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 const authController = require('./controllers/auth.controller');
 
 const app = express();
@@ -9,10 +10,17 @@ app.use(cors());
 
 /**
  * CONFIGURACIÓN DE LÍMITE DE TAMAÑO:
- * Aumentamos el límite a 10MB para permitir la carga de fotos de perfil en Base64.
+ * Aumentamos el límite a 10MB para permitir la carga de archivos grandes.
  */
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
+/**
+ * SERVIR ARCHIVOS ESTÁTICOS:
+ * Permite acceder a las fotos de perfil mediante URLs como:
+ * http://localhost:3000/uploads/avatars/1234567890.jpg
+ */
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Rutas públicas
 app.use('/api/auth', require('./routes/auth.routes'));
@@ -42,7 +50,8 @@ app.get('/', (req, res) => {
             medicamentos: '/api/medicamentos',
             consultas: '/api/consultas',
             recetas: '/api/recetas'
-        }
+        },
+        uploads: '/uploads'
     });
 });
 
@@ -54,7 +63,16 @@ app.use((req, res) => {
 // Manejo de errores generales
 app.use((err, req, res, next) => {
     console.error('Error:', err);
-    res.status(500).json({ error: 'Error interno del servidor' });
+    
+    // Error de multer
+    if (err instanceof require('multer').MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'El archivo es demasiado grande. Máximo 2MB.' });
+        }
+        return res.status(400).json({ error: err.message });
+    }
+    
+    res.status(500).json({ error: err.message || 'Error interno del servidor' });
 });
 
 const PORT = 3000;
@@ -64,10 +82,13 @@ app.listen(PORT, async () => {
     console.log('═══════════════════════════════════════════════════');
     console.log('🏥  SISTEMA CLÍNICO - PROYECTOVERIS');
     console.log('═══════════════════════════════════════════════════');
-    console.log(`Servidor activo en http://localhost:${PORT}`);
-    console.log(`API disponible en http://localhost:${PORT}/api`);
+    console.log(`✅ Servidor activo en http://localhost:${PORT}`);
+    console.log(`✅ API disponible en http://localhost:${PORT}/api`);
+    console.log(`✅ Uploads disponibles en http://localhost:${PORT}/uploads`);
     console.log('═══════════════════════════════════════════════════');
     
     // Inicializar administrador por defecto
     await authController.initializeAdmin();
 });
+
+module.exports = app;

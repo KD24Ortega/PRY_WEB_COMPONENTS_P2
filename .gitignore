@@ -1,0 +1,11 @@
+# uploads
+uploads/*
+!uploads/.gitkeep
+!uploads/avatars/
+uploads/avatars/*
+!uploads/avatars/default.jpg
+
+# node modules
+node_modules/
+backend/node_modules/
+frontend/node_modules/

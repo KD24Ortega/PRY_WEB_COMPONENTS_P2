@@ -2,6 +2,7 @@ import { LitElement, html, css } from 'lit';
 import apiService from '../../services/api.service.js';
 import '../shared/data-table.js';
 import '../shared/loading-spinner.js';
+import '../shared/image-upload.js';
 
 class UsuariosManager extends LitElement {
     static styles = css`
@@ -73,6 +74,7 @@ class UsuariosManager extends LitElement {
             align-items: center;
             z-index: 2000;
             backdrop-filter: blur(4px);
+            padding: 20px;
         }
 
         .modal-content {
@@ -80,7 +82,7 @@ class UsuariosManager extends LitElement {
             border-radius: 16px;
             padding: 30px;
             max-width: 500px;
-            width: 90%;
+            width: 100%;
             max-height: 90vh;
             overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -326,6 +328,34 @@ class UsuariosManager extends LitElement {
             color: #DC3545;
             font-size: 0.9rem;
         }
+
+        .photo-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            background: #F8F9FA;
+            border-radius: 12px;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #2C5282;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .user-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #0066CC;
+        }
+
+        .avatar-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
     `;
 
     static properties = {
@@ -337,7 +367,8 @@ class UsuariosManager extends LitElement {
         selectedUsuario: { type: Object },
         saving: { type: Boolean },
         roleFilter: { type: String },
-        notification: { type: Object }
+        notification: { type: Object },
+        selectedPhoto: { type: String }
     };
 
     constructor() {
@@ -351,6 +382,7 @@ class UsuariosManager extends LitElement {
         this.saving = false;
         this.roleFilter = 'ALL';
         this.notification = null;
+        this.selectedPhoto = '';
         this.loadUsuarios();
     }
 
@@ -385,6 +417,13 @@ class UsuariosManager extends LitElement {
         this.showModal = true;
     }
 
+    openEditPhotoModal(e) {
+        this.selectedUsuario = e.detail.item;
+        this.selectedPhoto = this.selectedUsuario.foto || '';
+        this.modalType = 'edit-photo';
+        this.showModal = true;
+    }
+
     openResetPasswordModal(e) {
         this.selectedUsuario = e.detail.item;
         this.modalType = 'reset-password';
@@ -401,6 +440,39 @@ class UsuariosManager extends LitElement {
         this.showModal = false;
         this.modalType = '';
         this.selectedUsuario = null;
+        this.selectedPhoto = '';
+    }
+
+    // Cambiar nombre del evento
+    handleFileSelected(e) {
+        this.selectedFile = e.detail.file;
+    }
+
+    handleFileRemoved() {
+        this.selectedFile = null;
+    }
+
+    async handleSavePhoto(e) {
+        e.preventDefault();
+
+        if (!this.selectedFile) {
+            this.showNotification('Por favor selecciona una foto', 'error');
+            return;
+        }
+
+        this.saving = true;
+
+        try {
+            await apiService.updateUserPhoto(this.selectedUsuario.idUsuario, this.selectedFile);
+            this.showNotification('Foto actualizada exitosamente', 'success');
+            this.closeModal();
+            this.loadUsuarios();
+        } catch (error) {
+            console.error('Error:', error);
+            this.showNotification(error.message || 'Error al guardar foto', 'error');
+        } finally {
+            this.saving = false;
+        }
     }
 
     async handleResetPassword(e) {
@@ -412,7 +484,6 @@ class UsuariosManager extends LitElement {
         this.saving = true;
 
         try {
-            // Se asume que el método resetPassword existe en tu apiService
             await apiService.resetPassword(this.selectedUsuario.idUsuario, newPassword);
             this.showNotification('Contraseña restablecida exitosamente', 'success');
             this.closeModal();
@@ -436,7 +507,6 @@ class UsuariosManager extends LitElement {
         this.saving = true;
 
         try {
-            // Se asume que el método deleteUsuario existe en tu apiService
             await apiService.deleteUsuario(usuario.idUsuario);
             this.showNotification('Usuario eliminado exitosamente', 'success');
             this.closeModal();
@@ -471,6 +541,13 @@ class UsuariosManager extends LitElement {
         if (!this.showModal) return '';
 
         if (this.modalType === 'view') {
+            // Construir URL completa de la foto
+            const fotoUrl = this.selectedUsuario?.foto && 
+                        this.selectedUsuario.foto !== 'default.jpg' && 
+                        this.selectedUsuario.foto !== '/uploads/avatars/default.jpg'
+                ? `http://localhost:3000${this.selectedUsuario.foto}` 
+                : null;
+
             return html`
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
                 
@@ -485,6 +562,18 @@ class UsuariosManager extends LitElement {
                                 <i class="bi bi-x-lg"></i>
                             </button>
                         </div>
+
+                        ${fotoUrl ? html`
+                            <div class="avatar-container">
+                                <img src="${fotoUrl}" alt="Avatar" class="user-avatar" @error=${this.handleImageError}>
+                            </div>
+                        ` : html`
+                            <div class="avatar-container">
+                                <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #0066CC 0%, #00D9FF 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                    <i class="bi bi-person" style="font-size: 3rem; color: white;"></i>
+                                </div>
+                            </div>
+                        `}
 
                         <div class="detail-grid">
                             <div class="detail-item">
@@ -503,11 +592,66 @@ class UsuariosManager extends LitElement {
                                     </span>
                                 </span>
                             </div>
+                            ${fotoUrl ? html`
+                                <div class="detail-item">
+                                    <span class="detail-label">Foto</span>
+                                    <span class="detail-value" style="font-size: 0.8rem; overflow-wrap: break-word;">${this.selectedUsuario?.foto}</span>
+                                </div>
+                            ` : ''}
                         </div>
 
                         <div class="modal-footer">
                             <button class="btn-cancel" @click=${this.closeModal}>
                                 Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (this.modalType === 'edit-photo') {
+            return html`
+                <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+        
+                <div class="modal-overlay" @click=${this.closeModal}>
+                    <div class="modal-content" @click=${(e) => e.stopPropagation()}>
+                        <div class="modal-header">
+                            <h3 class="modal-title">
+                                <i class="bi bi-camera"></i>
+                                Cambiar Foto de Perfil
+                            </h3>
+                            <button class="btn-close" @click=${this.closeModal}>
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+
+                        <div class="user-info">
+                            <div class="info-row">
+                                <span class="info-label">Usuario:</span>
+                                <span class="info-value">${this.selectedUsuario?.usuario}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Nombre:</span>
+                                <span class="info-value">${this.selectedUsuario?.nombre}</span>
+                            </div>
+                        </div>
+
+                        <div class="photo-section">
+                            <div class="section-title">Foto de Perfil</div>
+                            <image-upload
+                                .imageUrl=${this.selectedPhoto}
+                                @file-selected=${this.handleFileSelected}
+                                @file-removed=${this.handleFileRemoved}>
+                            </image-upload>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button class="btn-cancel" @click=${this.closeModal}>
+                                Cancelar
+                            </button>
+                            <button class="btn-save" @click=${this.handleSavePhoto} ?disabled=${this.saving}>
+                                ${this.saving ? 'Guardando...' : 'Guardar Foto'}
                             </button>
                         </div>
                     </div>
@@ -615,6 +759,11 @@ class UsuariosManager extends LitElement {
         return '';
     }
 
+    handleImageError(e) {
+        console.error('Error al cargar imagen:', e.target.src);
+        e.target.style.display = 'none';
+    }
+
     render() {
         if (this.loading) {
             return html`
@@ -624,7 +773,6 @@ class UsuariosManager extends LitElement {
         }
 
         const columns = [
-            // SE HA ELIMINADO LA COLUMNA ID DE AQUÍ
             { header: 'Usuario', field: 'usuario' },
             { header: 'Nombre', field: 'nombre' },
             { 
@@ -676,7 +824,7 @@ class UsuariosManager extends LitElement {
                 .columns=${columns}
                 .data=${this.filteredUsuarios}
                 @view=${this.openViewModal}
-                @edit=${this.openResetPasswordModal}
+                @edit=${this.openEditPhotoModal}
                 @delete=${this.openDeleteModal}>
             </data-table>
 

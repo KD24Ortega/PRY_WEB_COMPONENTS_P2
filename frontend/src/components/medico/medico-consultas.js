@@ -8,7 +8,10 @@ class MedicoConsultas extends LitElement {
     static styles = css`
         :host {
             display: block;
-            font-family: 'Poppins', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         .page-header {
@@ -16,15 +19,19 @@ class MedicoConsultas extends LitElement {
             justify-content: space-between;
             align-items: center;
             margin-bottom: 30px;
+            gap: 15px;
+            flex-wrap: wrap;
         }
 
         .page-title {
+            font-family: 'Poppins', sans-serif;
             font-size: 2rem;
             font-weight: 700;
             color: #0066CC;
             display: flex;
             align-items: center;
             gap: 10px;
+            margin: 0;
         }
 
         .btn-add {
@@ -35,22 +42,21 @@ class MedicoConsultas extends LitElement {
             border-radius: 10px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 8px;
         }
 
-        /* Modal Styles */
+
         .modal-overlay {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.6);
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 2000;
-            backdrop-filter: blur(4px);
+            padding: 20px;
         }
 
         .modal-content {
@@ -58,10 +64,9 @@ class MedicoConsultas extends LitElement {
             border-radius: 16px;
             padding: 30px;
             max-width: 700px;
-            width: 90%;
+            width: 100%;
             max-height: 90vh;
             overflow-y: auto;
-            position: relative;
         }
 
         .modal-header {
@@ -73,85 +78,96 @@ class MedicoConsultas extends LitElement {
             border-bottom: 2px solid #E0E6ED;
         }
 
-        .modal-header h3 { margin: 0; color: #0066CC; }
+        .modal-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #0066CC;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
 
         .btn-close {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             cursor: pointer;
-            color: #666;
         }
+
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
+            width: 100%;
         }
 
-        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
 
-        label { display: block; font-weight: 600; margin-bottom: 8px; color: #444; }
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2C5282;
+        }
 
         input, select, textarea {
             width: 100%;
+            max-width: 100%;
             padding: 12px;
             border: 2px solid #E0E6ED;
             border-radius: 8px;
-            box-sizing: border-box;
+            font-family: inherit;
         }
 
-        input:disabled, select:disabled, textarea:disabled {
-            background-color: #f8f9fa;
-            color: #666;
-            border-color: #eee;
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        input:disabled, textarea:disabled, select:disabled {
+            background: #F8F9FA;
         }
 
         .modal-footer {
             display: flex;
-            gap: 10px;
             justify-content: flex-end;
+            gap: 10px;
             margin-top: 25px;
+            flex-wrap: wrap;
         }
 
-        .btn-cancel, .btn-save, .btn-confirm-delete {
+        .btn-cancel {
+            background: #F8F9FA;
+            border: 2px solid #E0E6ED;
             padding: 10px 20px;
             border-radius: 8px;
             cursor: pointer;
-            font-weight: 600;
-            transition: 0.2s;
         }
 
-        .btn-cancel { background: #F8F9FA; border: 2px solid #E0E6ED; }
-        .btn-save { background: #0066CC; color: white; border: none; }
-        .btn-confirm-delete { background: #dc3545; color: white; border: none; }
-
-        /* Toast / Notification system */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 3000;
-        }
-
-        .toast {
-            background: #28a745;
+        .btn-save {
+            background: linear-gradient(135deg, #0066CC 0%, #00D9FF 100%);
             color: white;
-            padding: 15px 25px;
+            border: none;
+            padding: 10px 20px;
             border-radius: 8px;
-            margin-top: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideIn 0.3s ease-out;
+            cursor: pointer;
         }
 
-        .toast.error { background: #dc3545; }
 
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+        .detail {
+            background: #F8F9FA;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
         }
     `;
 
@@ -160,11 +176,9 @@ class MedicoConsultas extends LitElement {
         pacientes: { type: Array },
         loading: { type: Boolean },
         showModal: { type: Boolean },
-        showConfirmDelete: { type: Boolean },
+        modalMode: { type: String }, 
         editingConsulta: { type: Object },
-        saving: { type: Boolean },
-        isReadOnly: { type: Boolean },
-        notification: { type: Object }
+        saving: { type: Boolean }
     };
 
     constructor() {
@@ -173,11 +187,9 @@ class MedicoConsultas extends LitElement {
         this.pacientes = [];
         this.loading = true;
         this.showModal = false;
-        this.showConfirmDelete = false;
+        this.modalMode = 'view';
         this.editingConsulta = null;
         this.saving = false;
-        this.isReadOnly = false;
-        this.notification = null;
     }
 
     connectedCallback() {
@@ -186,133 +198,102 @@ class MedicoConsultas extends LitElement {
     }
 
     async loadData() {
-        try {
-            const currentUser = authService.getCurrentUser();
-            const [consultasData, pacientesData] = await Promise.all([
-                apiService.getConsultasByMedico(currentUser.idMedico),
-                apiService.getPacientes()
-            ]);
-            this.consultas = consultasData;
-            this.pacientes = pacientesData;
-        } catch (error) {
-            this.notify('Error al cargar datos', 'error');
-        } finally {
-            this.loading = false;
-        }
+        const user = authService.getCurrentUser();
+        const [consultas, pacientes] = await Promise.all([
+            apiService.getConsultasByMedico(user.idMedico),
+            apiService.getPacientes()
+        ]);
+        this.consultas = consultas;
+        this.pacientes = pacientes;
+        this.loading = false;
     }
 
-    notify(message, type = 'success') {
-        this.notification = { message, type };
-        setTimeout(() => { this.notification = null; }, 3000);
-    }
-
-    openCreateModal() {
-        this.editingConsulta = null;
-        this.isReadOnly = false;
+    openViewModal(e) {
+        this.editingConsulta = e.detail.item;
+        this.modalMode = 'view';
         this.showModal = true;
     }
 
     openEditModal(e) {
         this.editingConsulta = e.detail.item;
-        this.isReadOnly = false;
+        this.modalMode = 'edit';
         this.showModal = true;
     }
 
-    openViewModal(e) {
-        this.editingConsulta = e.detail.item;
-        this.isReadOnly = true;
+    openCreateModal() {
+        this.editingConsulta = null;
+        this.modalMode = 'create';
         this.showModal = true;
     }
 
     closeModal() {
         this.showModal = false;
         this.editingConsulta = null;
-        this.isReadOnly = false;
     }
 
     async handleSubmit(e) {
         e.preventDefault();
-        const form = e.target;
-        const currentUser = authService.getCurrentUser();
+        const f = e.target;
+        const user = authService.getCurrentUser();
+
         const data = {
-            idMedico: currentUser.idMedico,
-            idPaciente: parseInt(form.paciente.value),
-            fechaConsulta: form.fecha.value,
-            hi: form.horaInicio.value,
-            hf: form.horaFin.value,
-            diagnostico: form.diagnostico.value
+            idMedico: user.idMedico,
+            idPaciente: +f.paciente.value,
+            fechaConsulta: f.fecha.value,
+            hi: f.hi.value,
+            hf: f.hf.value,
+            diagnostico: f.diagnostico.value
         };
 
         this.saving = true;
-        try {
-            if (this.editingConsulta) {
-                await apiService.updateConsulta(this.editingConsulta.IdConsulta, data);
-                this.notify('Consulta actualizada con éxito');
-            } else {
-                await apiService.createConsulta(data);
-                this.notify('Consulta guardada con éxito');
-            }
-            this.closeModal();
-            this.loadData();
-        } catch (error) {
-            this.notify('Error al procesar la operación', 'error');
-        } finally {
-            this.saving = false;
+        if (this.modalMode === 'edit') {
+            await apiService.updateConsulta(this.editingConsulta.IdConsulta, data);
+        } else {
+            await apiService.createConsulta(data);
         }
-    }
-
-    handleDeleteRequest(e) {
-        this.itemToDelete = e.detail.item;
-        this.showConfirmDelete = true;
-    }
-
-    async confirmDelete() {
-        try {
-            await apiService.deleteConsulta(this.itemToDelete.IdConsulta);
-            this.notify('Consulta eliminada');
-            this.showConfirmDelete = false;
-            this.loadData();
-        } catch (error) {
-            this.notify('Error al eliminar', 'error');
-        }
-    }
-
-    renderConfirmDeleteModal() {
-        if (!this.showConfirmDelete) return '';
-        return html`
-            <div class="modal-overlay">
-                <div class="modal-content" style="max-width: 400px; text-align: center;">
-                    <i class="bi bi-exclamation-triangle-fill" style="font-size: 3rem; color: #dc3545;"></i>
-                    <h3>¿Estás seguro?</h3>
-                    <p>Esta acción eliminará permanentemente el registro de la consulta.</p>
-                    <div class="modal-footer" style="justify-content: center;">
-                        <button class="btn-cancel" @click=${() => this.showConfirmDelete = false}>Cancelar</button>
-                        <button class="btn-confirm-delete" @click=${this.confirmDelete}>Eliminar</button>
-                    </div>
-                </div>
-            </div>
-        `;
+        this.saving = false;
+        this.closeModal();
+        this.loadData();
     }
 
     renderModal() {
         if (!this.showModal) return '';
-        const consulta = this.editingConsulta;
+
+        const c = this.editingConsulta;
+        const view = this.modalMode === 'view';
 
         return html`
-            <div class="modal-overlay" @click=${this.closeModal}>
-                <div class="modal-content" @click=${(e) => e.stopPropagation()}>
-                    <div class="modal-header">
-                        <h3>${this.isReadOnly ? 'Detalles de' : (consulta ? 'Editar' : 'Nueva')} Consulta</h3>
-                        <button class="btn-close" @click=${this.closeModal}>✕</button>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+
+        <div class="modal-overlay" @click=${this.closeModal}>
+            <div class="modal-content" @click=${e => e.stopPropagation()}>
+                <div class="modal-header">
+                    <h3 class="modal-title">
+                        <i class="bi bi-${view ? 'eye' : 'pencil'}"></i>
+                        ${view ? 'Detalle Consulta' : 'Consulta'}
+                    </h3>
+                    <button class="btn-close" @click=${this.closeModal}>✕</button>
+                </div>
+
+                ${view ? html`
+                    <div class="form-grid">
+                        <div class="detail"><strong>Paciente:</strong> ${c.NombrePaciente}</div>
+                        <div class="detail"><strong>Fecha:</strong> ${new Date(c.FechaConsulta).toLocaleDateString()}</div>
+                        <div class="detail"><strong>Hora Inicio:</strong> ${c.HI}</div>
+                        <div class="detail"><strong>Hora Fin:</strong> ${c.HF}</div>
+                        <div class="detail full-width"><strong>Diagnóstico:</strong> ${c.Diagnostico}</div>
                     </div>
+                    <div class="modal-footer">
+                        <button class="btn-save" @click=${this.closeModal}>Cerrar</button>
+                    </div>
+                ` : html`
                     <form @submit=${this.handleSubmit}>
                         <div class="form-grid">
                             <div class="form-group">
                                 <label>Paciente *</label>
-                                <select name="paciente" required ?disabled=${this.isReadOnly}>
-                                    <option value="">Selecciona</option>
+                                <select name="paciente" required>
                                     ${this.pacientes.map(p => html`
-                                        <option value="${p.IdPaciente}" ?selected=${consulta?.IdPaciente === p.IdPaciente}>
+                                        <option value="${p.IdPaciente}" ?selected=${c?.IdPaciente === p.IdPaciente}>
                                             ${p.Nombre}
                                         </option>
                                     `)}
@@ -320,35 +301,31 @@ class MedicoConsultas extends LitElement {
                             </div>
                             <div class="form-group">
                                 <label>Fecha *</label>
-                                <input type="date" name="fecha" .value=${consulta?.FechaConsulta?.split('T')[0] || ''} required ?disabled=${this.isReadOnly}>
+                                <input type="date" name="fecha" .value=${c?.FechaConsulta?.split('T')[0] || ''} required>
                             </div>
                             <div class="form-group">
                                 <label>Hora Inicio *</label>
-                                <input type="time" name="horaInicio" .value=${consulta?.HI || ''} required ?disabled=${this.isReadOnly}>
+                                <input type="time" name="hi" .value=${c?.HI || ''} required>
                             </div>
                             <div class="form-group">
                                 <label>Hora Fin *</label>
-                                <input type="time" name="horaFin" .value=${consulta?.HF || ''} required ?disabled=${this.isReadOnly}>
+                                <input type="time" name="hf" .value=${c?.HF || ''} required>
                             </div>
                             <div class="form-group full-width">
                                 <label>Diagnóstico *</label>
-                                <textarea name="diagnostico" required ?disabled=${this.isReadOnly}>${consulta?.Diagnostico || ''}</textarea>
+                                <textarea name="diagnostico" required>${c?.Diagnostico || ''}</textarea>
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn-cancel" @click=${this.closeModal}>
-                                ${this.isReadOnly ? 'Cerrar' : 'Cancelar'}
+                            <button type="button" class="btn-cancel" @click=${this.closeModal}>Cancelar</button>
+                            <button class="btn-save" ?disabled=${this.saving}>
+                                ${this.saving ? 'Guardando...' : 'Guardar'}
                             </button>
-                            ${!this.isReadOnly ? html`
-                                <button type="submit" class="btn-save" ?disabled=${this.saving}>
-                                    ${this.saving ? 'Guardando...' : 'Guardar'}
-                                </button>
-                            ` : ''}
                         </div>
                     </form>
-                </div>
+                `}
             </div>
-        `;
+        </div>`;
     }
 
     render() {
@@ -359,42 +336,28 @@ class MedicoConsultas extends LitElement {
         const columns = [
             { header: 'ID', field: 'IdConsulta' },
             { header: 'Paciente', field: 'NombrePaciente' },
-            { header: 'Fecha', field: 'FechaConsulta', render: (f) => new Date(f).toLocaleDateString('es-ES') },
-            { header: 'Horario', field: 'HI', render: (val, item) => `${item.HI} - ${item.HF}` }
+            { header: 'Fecha', field: 'FechaConsulta', render: f => new Date(f).toLocaleDateString() },
+            { header: 'Hora Inicio', field: 'HI' },
+            { header: 'Hora Fin', field: 'HF' }
         ];
 
         return html`
-            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
-            
-            <div class="page-header">
-                <h1 class="page-title">
-                    <i class="bi bi-calendar-check"></i> Mis Consultas
-                </h1>
-                <button class="btn-add" @click=${this.openCreateModal}>
-                    <i class="bi bi-plus-circle"></i> Nueva Consulta
-                </button>
-            </div>
+        <div class="page-header">
+            <h1 class="page-title"><i class="bi bi-calendar-check"></i> Mis Consultas</h1>
+            <button class="btn-add" @click=${this.openCreateModal}>
+                <i class="bi bi-plus-circle"></i> Nueva Consulta
+            </button>
+        </div>
 
-            <data-table
-                title="Registro de Consultas"
-                .columns=${columns}
-                .data=${this.consultas}
-                @view=${this.openViewModal}
-                @edit=${this.openEditModal}
-                @delete=${this.handleDeleteRequest}>
-            </data-table>
+        <data-table
+            .columns=${columns}
+            .data=${this.consultas}
+            @view=${this.openViewModal}
+            @edit=${this.openEditModal}
+            @delete=${e => apiService.deleteConsulta(e.detail.item.IdConsulta).then(() => this.loadData())}>
+        </data-table>
 
-            ${this.renderModal()}
-            ${this.renderConfirmDeleteModal()}
-
-            <div class="toast-container">
-                ${this.notification ? html`
-                    <div class="toast ${this.notification.type}">
-                        <i class="bi ${this.notification.type === 'success' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
-                        ${this.notification.message}
-                    </div>
-                ` : ''}
-            </div>
+        ${this.renderModal()}
         `;
     }
 }

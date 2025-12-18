@@ -73,15 +73,14 @@ exports.getByPaciente = async (req, res) => {
 
 exports.create = async (req, res) => {
     try {
-        // Capturamos instrucciones del body enviado por el frontend
-        const { idConsulta, idMedicamento, cantidad, instrucciones } = req.body;
+        const { idConsulta, idMedicamento, cantidad } = req.body;
         
-        // Insertamos en la nueva columna de la tabla
         const result = await query(
-            'INSERT INTO recetas (IdConsulta, IdMedicamento, Cantidad, Instrucciones) VALUES (?, ?, ?, ?)',
-            [idConsulta, idMedicamento, cantidad, instrucciones]
+            'INSERT INTO recetas (IdConsulta, IdMedicamento, Cantidad) VALUES (?, ?, ?)',
+            [idConsulta, idMedicamento, cantidad]
         );
         
+        // Obtener la receta completa con todos los datos
         const recetaCompleta = await query(
             `SELECT r.*, 
                     c.FechaConsulta, c.Diagnostico,
@@ -111,13 +110,13 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
     try {
         const { id } = req.params;
-        const { idConsulta, idMedicamento, cantidad, instrucciones } = req.body;
+        const { idConsulta, idMedicamento, cantidad } = req.body;
         
         await query(
             `UPDATE recetas 
-             SET IdConsulta = ?, IdMedicamento = ?, Cantidad = ?, Instrucciones = ? 
+             SET IdConsulta = ?, IdMedicamento = ?, Cantidad = ? 
              WHERE IdReceta = ?`,
-            [idConsulta, idMedicamento, cantidad, instrucciones, id]
+            [idConsulta, idMedicamento, cantidad, id]
         );
         
         res.json({ message: 'Receta actualizada exitosamente' });
@@ -130,7 +129,9 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
     try {
         const { id } = req.params;
+        
         await query('DELETE FROM recetas WHERE IdReceta = ?', [id]);
+        
         res.json({ message: 'Receta eliminada exitosamente' });
     } catch (error) {
         console.error('Error:', error);

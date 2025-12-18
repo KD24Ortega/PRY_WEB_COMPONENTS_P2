@@ -31,12 +31,12 @@ exports.getById = async (req, res) => {
 
 exports.create = async (req, res) => {
     try {
-        const { nombre, cedula, edad, genero, estatura, peso, foto } = req.body;
+        const { nombre, cedula, edad, genero, estatura, peso } = req.body;
         
         const result = await query(
-            `INSERT INTO pacientes (Nombre, Cedula, Edad, Genero, Estatura, Peso, Foto) 
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [nombre, cedula, edad, genero, estatura, peso, foto || 'default.jpg']
+            `INSERT INTO pacientes (Nombre, Cedula, Edad, Genero, Estatura, Peso) 
+             VALUES (?, ?, ?, ?, ?, ?)`,
+            [nombre, cedula, edad || 0, genero || 'No especificado', estatura || 0, peso || 0]
         );
         
         res.status(201).json({ 
@@ -52,13 +52,13 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, cedula, edad, genero, estatura, peso, foto } = req.body;
+        const { nombre, cedula, edad, genero, estatura, peso } = req.body;
         
         await query(
             `UPDATE pacientes 
-             SET Nombre = ?, Cedula = ?, Edad = ?, Genero = ?, Estatura = ?, Peso = ?, Foto = ? 
+             SET Nombre = ?, Cedula = ?, Edad = ?, Genero = ?, Estatura = ?, Peso = ? 
              WHERE IdPaciente = ?`,
-            [nombre, cedula, edad, genero, estatura, peso, foto, id]
+            [nombre, cedula, edad, genero, estatura, peso, id]
         );
         
         res.json({ message: 'Paciente actualizado exitosamente' });

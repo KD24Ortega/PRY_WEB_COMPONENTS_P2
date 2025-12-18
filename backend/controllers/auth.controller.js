@@ -24,12 +24,14 @@ exports.initializeAdmin = async () => {
         const hashedPassword = await bcrypt.hash('123', 10);
 
         await query(
-            `INSERT INTO usuarios (Usuario, PasswordHash, Rol, IdAdministrador) 
-             VALUES (?, ?, ?, ?)`,
-            ['admin', hashedPassword, 'ADMIN', adminData.insertId]
+            `INSERT INTO usuarios (Usuario, PasswordHash, Rol, Foto, IdAdministrador) 
+             VALUES (?, ?, ?, ?, ?)`,
+            ['admin', hashedPassword, 'ADMIN', 'default.jpg', adminData.insertId]
         );
 
         console.log('✅ Administrador por defecto creado exitosamente');
+        console.log('   Usuario: admin');
+        console.log('   Contraseña: 123');
     } catch (error) {
         console.error('❌ Error al crear administrador por defecto:', error);
     }
@@ -41,60 +43,93 @@ exports.register = async (req, res) => {
         const { usuario, password, rol, datosPersonales } = req.body;
 
         if (!usuario || !password || !rol) {
-            return res.status(400).json({ error: 'Usuario, contraseña y rol son requeridos' });
+            return res.status(400).json({ 
+                error: 'Usuario, contraseña y rol son requeridos' 
+            });
         }
 
-        const existingUser = await query('SELECT * FROM usuarios WHERE Usuario = ?', [usuario]);
+        const existingUser = await query(
+            'SELECT * FROM usuarios WHERE Usuario = ?',
+            [usuario]
+        );
 
         if (existingUser.length > 0) {
-            return res.status(400).json({ error: 'El nombre de usuario ya está en uso' });
+            return res.status(400).json({ 
+                error: 'El nombre de usuario ya está en uso' 
+            });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
+        const foto = datosPersonales.foto || 'default.jpg';
+
         let relacionId = null;
 
         switch (rol) {
             case 'MEDICO':
+                if (!datosPersonales.nombre || !datosPersonales.idEspecialidad) {
+                    return res.status(400).json({ 
+                        error: 'Datos incompletos para médico' 
+                    });
+                }
+                
                 const medico = await query(
                     'INSERT INTO medicos (Nombre, IdEspecialidad) VALUES (?, ?)',
                     [datosPersonales.nombre, datosPersonales.idEspecialidad]
                 );
                 relacionId = medico.insertId;
+
                 await query(
-                    `INSERT INTO usuarios (Usuario, PasswordHash, Rol, IdMedico, Foto) 
+                    `INSERT INTO usuarios (Usuario, PasswordHash, Rol, Foto, IdMedico) 
                      VALUES (?, ?, ?, ?, ?)`,
-                    [usuario, hashedPassword, rol, relacionId, datosPersonales.foto || null]
+                    [usuario, hashedPassword, rol, foto, relacionId]
                 );
                 break;
 
             case 'PACIENTE':
+                if (!datosPersonales.nombre || !datosPersonales.cedula) {
+                    return res.status(400).json({ 
+                        error: 'Datos incompletos para paciente' 
+                    });
+                }
+
                 const paciente = await query(
                     `INSERT INTO pacientes (Nombre, Cedula, Edad, Genero, Estatura, Peso) 
                      VALUES (?, ?, ?, ?, ?, ?)`,
                     [
-                        datosPersonales.nombre, datosPersonales.cedula,
-                        datosPersonales.edad || 0, datosPersonales.genero || 'No especificado',
-                        datosPersonales.estatura || 0, datosPersonales.peso || 0
+                        datosPersonales.nombre,
+                        datosPersonales.cedula,
+                        datosPersonales.edad || 0,
+                        datosPersonales.genero || 'No especificado',
+                        datosPersonales.estatura || 0,
+                        datosPersonales.peso || 0
                     ]
                 );
                 relacionId = paciente.insertId;
+
                 await query(
-                    `INSERT INTO usuarios (Usuario, PasswordHash, Rol, IdPaciente, Foto) 
+                    `INSERT INTO usuarios (Usuario, PasswordHash, Rol, Foto, IdPaciente) 
                      VALUES (?, ?, ?, ?, ?)`,
-                    [usuario, hashedPassword, rol, relacionId, datosPersonales.foto || null]
+                    [usuario, hashedPassword, rol, foto, relacionId]
                 );
                 break;
 
             case 'ADMIN':
+                if (!datosPersonales.nombre || !datosPersonales.correo) {
+                    return res.status(400).json({ 
+                        error: 'Datos incompletos para administrador' 
+                    });
+                }
+
                 const admin = await query(
                     'INSERT INTO administradores (Nombre, Correo) VALUES (?, ?)',
                     [datosPersonales.nombre, datosPersonales.correo]
                 );
                 relacionId = admin.insertId;
+
                 await query(
-                    `INSERT INTO usuarios (Usuario, PasswordHash, Rol, IdAdministrador, Foto) 
+                    `INSERT INTO usuarios (Usuario, PasswordHash, Rol, Foto, IdAdministrador) 
                      VALUES (?, ?, ?, ?, ?)`,
-                    [usuario, hashedPassword, rol, relacionId, datosPersonales.foto || null]
+                    [usuario, hashedPassword, rol, foto, relacionId]
                 );
                 break;
 
@@ -102,26 +137,30 @@ exports.register = async (req, res) => {
                 return res.status(400).json({ error: 'Rol no válido' });
         }
 
-        res.status(201).json({ message: 'Usuario registrado exitosamente', usuario, rol });
+        res.status(201).json({ 
+            message: 'Usuario registrado exitosamente',
+            usuario: usuario,
+            rol: rol
+        });
+
     } catch (error) {
         console.error('Error en registro:', error);
         res.status(500).json({ error: 'Error al registrar usuario' });
     }
 };
 
-// Login
 exports.login = async (req, res) => {
     try {
         const { usuario, password } = req.body;
 
         if (!usuario || !password) {
-            return res.status(400).json({ error: 'Usuario y contraseña son requeridos' });
+            return res.status(400).json({ 
+                error: 'Usuario y contraseña son requeridos' 
+            });
         }
 
-        // SE AGREGÓ u.Foto a la consulta
         const users = await query(
-            `SELECT u.IdUsuario, u.Usuario, u.PasswordHash, u.Rol, u.Foto,
-                    u.IdMedico, u.IdPaciente, u.IdAdministrador,
+            `SELECT u.*, 
                     m.Nombre as NombreMedico, m.IdEspecialidad,
                     p.Nombre as NombrePaciente, p.Cedula,
                     a.Nombre as NombreAdmin, a.Correo
@@ -138,8 +177,8 @@ exports.login = async (req, res) => {
         }
 
         const user = users[0];
+
         const validPassword = await bcrypt.compare(password, user.PasswordHash);
-        
         if (!validPassword) {
             return res.status(401).json({ error: 'Credenciales incorrectas' });
         }
@@ -148,7 +187,10 @@ exports.login = async (req, res) => {
             { 
                 idUsuario: user.IdUsuario,
                 usuario: user.Usuario,
-                rol: user.Rol
+                rol: user.Rol,
+                idMedico: user.IdMedico,
+                idPaciente: user.IdPaciente,
+                idAdministrador: user.IdAdministrador
             },
             jwtConfig.secret,
             { expiresIn: jwtConfig.expiresIn }
@@ -160,15 +202,24 @@ exports.login = async (req, res) => {
         switch (user.Rol) {
             case 'MEDICO':
                 nombre = user.NombreMedico;
-                datosAdicionales = { idMedico: user.IdMedico, idEspecialidad: user.IdEspecialidad };
+                datosAdicionales = {
+                    idMedico: user.IdMedico,
+                    idEspecialidad: user.IdEspecialidad
+                };
                 break;
             case 'PACIENTE':
                 nombre = user.NombrePaciente;
-                datosAdicionales = { idPaciente: user.IdPaciente, cedula: user.Cedula };
+                datosAdicionales = {
+                    idPaciente: user.IdPaciente,
+                    cedula: user.Cedula
+                };
                 break;
             case 'ADMIN':
                 nombre = user.NombreAdmin;
-                datosAdicionales = { idAdministrador: user.IdAdministrador, correo: user.Correo };
+                datosAdicionales = {
+                    idAdministrador: user.IdAdministrador,
+                    correo: user.Correo
+                };
                 break;
         }
 
@@ -180,7 +231,7 @@ exports.login = async (req, res) => {
                 usuario: user.Usuario,
                 rol: user.Rol,
                 nombre: nombre,
-                foto: user.Foto, // CAMBIO: Se devuelve la foto al frontend
+                foto: user.Foto,
                 ...datosAdicionales
             }
         });
@@ -196,10 +247,8 @@ exports.verifySession = async (req, res) => {
     try {
         const userId = req.user.idUsuario;
 
-        // SE AGREGÓ u.Foto a la consulta
         const users = await query(
-            `SELECT u.IdUsuario, u.Usuario, u.Rol, u.Foto, 
-                    u.IdMedico, u.IdPaciente, u.IdAdministrador,
+            `SELECT u.IdUsuario, u.Usuario, u.Rol, u.Foto, u.IdMedico, u.IdPaciente, u.IdAdministrador,
                     m.Nombre as NombreMedico, m.IdEspecialidad,
                     p.Nombre as NombrePaciente, p.Cedula,
                     a.Nombre as NombreAdmin, a.Correo
@@ -216,21 +265,31 @@ exports.verifySession = async (req, res) => {
         }
 
         const user = users[0];
+
         let nombre = '';
         let datosAdicionales = {};
 
         switch (user.Rol) {
             case 'MEDICO':
                 nombre = user.NombreMedico;
-                datosAdicionales = { idMedico: user.IdMedico, idEspecialidad: user.IdEspecialidad };
+                datosAdicionales = {
+                    idMedico: user.IdMedico,
+                    idEspecialidad: user.IdEspecialidad
+                };
                 break;
             case 'PACIENTE':
                 nombre = user.NombrePaciente;
-                datosAdicionales = { idPaciente: user.IdPaciente, cedula: user.Cedula };
+                datosAdicionales = {
+                    idPaciente: user.IdPaciente,
+                    cedula: user.Cedula
+                };
                 break;
             case 'ADMIN':
                 nombre = user.NombreAdmin;
-                datosAdicionales = { idAdministrador: user.IdAdministrador, correo: user.Correo };
+                datosAdicionales = {
+                    idAdministrador: user.IdAdministrador,
+                    correo: user.Correo
+                };
                 break;
         }
 
@@ -240,7 +299,7 @@ exports.verifySession = async (req, res) => {
                 usuario: user.Usuario,
                 rol: user.Rol,
                 nombre: nombre,
-                foto: user.Foto, // CAMBIO: Se devuelve la foto al verificar sesión
+                foto: user.Foto,
                 ...datosAdicionales
             }
         });
@@ -251,11 +310,13 @@ exports.verifySession = async (req, res) => {
     }
 };
 
+// Obtener especialidades (endpoint público para registro)
 exports.getEspecialidadesPublic = async (req, res) => {
     try {
         const especialidades = await query('SELECT * FROM especialidades ORDER BY Descripcion');
         res.json(especialidades);
     } catch (error) {
+        console.error('Error al obtener especialidades:', error);
         res.status(500).json({ error: 'Error al obtener especialidades' });
     }
 };

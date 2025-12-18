@@ -71,7 +71,6 @@ exports.update = async (req, res) => {
         const { id } = req.params;
         const { nombre, correo } = req.body;
         
-        // Validar que el correo no esté en uso por otro administrador
         const existingAdmin = await query(
             'SELECT * FROM administradores WHERE Correo = ? AND IdAdministrador != ?',
             [correo, id]
@@ -101,7 +100,6 @@ exports.delete = async (req, res) => {
     try {
         const { id } = req.params;
         
-        // Verificar si es el administrador principal (admin)
         const admin = await query(
             `SELECT u.Usuario 
              FROM administradores a

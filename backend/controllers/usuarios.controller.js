@@ -1,5 +1,8 @@
 const bcrypt = require('bcryptjs');
 const { query } = require('../config/db');
+const fs = require('fs');
+const path = require('path');
+
 
 exports.getAll = async (req, res) => {
     try {
@@ -40,7 +43,7 @@ exports.getAll = async (req, res) => {
                 idUsuario: u.IdUsuario,
                 usuario: u.Usuario,
                 rol: u.Rol,
-                foto: u.Foto, // Se incluye la foto general del usuario
+                foto: u.Foto,
                 nombre: nombre,
                 ...detalles
             };
@@ -57,7 +60,7 @@ exports.getById = async (req, res) => {
     try {
         const { id } = req.params;
         const usuarios = await query(
-            `SELECT u.IdUsuario, u.Usuario, u.Rol, u.Foto as FotoUsuario,
+            `SELECT u.IdUsuario, u.Usuario, u.Rol, u.Foto,
                     u.IdMedico, u.IdPaciente, u.IdAdministrador,
                     m.Nombre as NombreMedico, m.IdEspecialidad,
                     e.Descripcion as EspecialidadMedico,
@@ -114,7 +117,7 @@ exports.getById = async (req, res) => {
             idUsuario: u.IdUsuario,
             usuario: u.Usuario,
             rol: u.Rol,
-            foto: u.FotoUsuario, // Foto principal de la tabla usuarios
+            foto: u.Foto,
             nombre: nombre,
             ...detalles
         });
@@ -124,48 +127,106 @@ exports.getById = async (req, res) => {
     }
 };
 
-// --- NUEVA FUNCIÓN PARA ACTUALIZAR FOTO ---
 exports.updateFoto = async (req, res) => {
     try {
         const { id } = req.params;
-        const { foto } = req.body; // El Base64 que enviamos desde el frontend
 
-        if (!foto) {
-            return res.status(400).json({ error: 'La foto es requerida' });
+        // Verificar que se subió un archivo
+        if (!req.file) {
+            return res.status(400).json({ error: 'No se subió ningún archivo' });
         }
 
+        // Obtener el usuario actual para eliminar foto anterior
+        const usuarios = await query(
+            'SELECT Foto FROM usuarios WHERE IdUsuario = ?',
+            [id]
+        );
+
+        if (usuarios.length === 0) {
+            // Si no existe el usuario, eliminar el archivo subido
+            fs.unlinkSync(req.file.path);
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        const usuarioActual = usuarios[0];
+
+        // Eliminar foto anterior si existe y no es la predeterminada
+        if (usuarioActual.Foto && 
+            usuarioActual.Foto !== 'default.jpg' && 
+            usuarioActual.Foto !== '/uploads/avatars/default.jpg') {
+            
+            const oldPhotoPath = path.join(__dirname, '..', usuarioActual.Foto);
+            
+            if (fs.existsSync(oldPhotoPath)) {
+                try {
+                    fs.unlinkSync(oldPhotoPath);
+                } catch (err) {
+                    console.error('Error al eliminar foto anterior:', err);
+                }
+            }
+        }
+
+        // Guardar la ruta relativa de la nueva foto
+        const fotoPath = `/uploads/avatars/${req.file.filename}`;
+
         const result = await query(
-            'UPDATE usuarios SET foto = ? WHERE IdUsuario = ?',
-            [foto, id]
+            'UPDATE usuarios SET Foto = ? WHERE IdUsuario = ?',
+            [fotoPath, id]
         );
 
         if (result.affectedRows === 0) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
-        res.json({ message: 'Foto de perfil actualizada exitosamente' });
+        res.json({ 
+            message: 'Foto de perfil actualizada exitosamente',
+            foto: fotoPath
+        });
     } catch (error) {
         console.error('Error al actualizar foto:', error);
+        
+        // Si hay error, eliminar el archivo subido
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
+        
         res.status(500).json({ error: 'Error interno al guardar la foto' });
     }
 };
-
-// ... (El resto de tus funciones changePassword, resetPassword, etc., se mantienen igual)
 
 exports.changePassword = async (req, res) => {
     try {
         const { id } = req.params;
         const { currentPassword, newPassword } = req.body;
+        
         if (!currentPassword || !newPassword) {
-            return res.status(400).json({ error: 'La contraseña actual y la nueva son requeridas' });
+            return res.status(400).json({ 
+                error: 'La contraseña actual y la nueva son requeridas' 
+            });
         }
-        const usuarios = await query('SELECT * FROM usuarios WHERE IdUsuario = ?', [id]);
-        if (usuarios.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+        
+        const usuarios = await query(
+            'SELECT * FROM usuarios WHERE IdUsuario = ?', 
+            [id]
+        );
+        
+        if (usuarios.length === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        
         const usuario = usuarios[0];
         const validPassword = await bcrypt.compare(currentPassword, usuario.PasswordHash);
-        if (!validPassword) return res.status(401).json({ error: 'La contraseña actual es incorrecta' });
+        
+        if (!validPassword) {
+            return res.status(401).json({ error: 'La contraseña actual es incorrecta' });
+        }
+        
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await query('UPDATE usuarios SET PasswordHash = ? WHERE IdUsuario = ?', [hashedPassword, id]);
+        await query(
+            'UPDATE usuarios SET PasswordHash = ? WHERE IdUsuario = ?',
+            [hashedPassword, id]
+        );
+        
         res.json({ message: 'Contraseña actualizada exitosamente' });
     } catch (error) {
         console.error('Error:', error);
@@ -177,11 +238,24 @@ exports.resetPassword = async (req, res) => {
     try {
         const { id } = req.params;
         const { newPassword } = req.body;
-        if (!newPassword || newPassword.length < 3) return res.status(400).json({ error: 'Password inválido' });
+        
+        if (!newPassword || newPassword.length < 3) {
+            return res.status(400).json({ error: 'Password inválido (mínimo 3 caracteres)' });
+        }
+        
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await query('UPDATE usuarios SET PasswordHash = ? WHERE IdUsuario = ?', [hashedPassword, id]);
+        const result = await query(
+            'UPDATE usuarios SET PasswordHash = ? WHERE IdUsuario = ?',
+            [hashedPassword, id]
+        );
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        
         res.json({ message: 'Contraseña restablecida exitosamente' });
     } catch (error) {
+        console.error('Error:', error);
         res.status(500).json({ error: 'Error al restablecer contraseña' });
     }
 };
@@ -190,10 +264,33 @@ exports.updateUsername = async (req, res) => {
     try {
         const { id } = req.params;
         const { newUsername } = req.body;
-        const result = await query('UPDATE usuarios SET Usuario = ? WHERE IdUsuario = ?', [newUsername, id]);
-        if (result.affectedRows === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+        
+        if (!newUsername) {
+            return res.status(400).json({ error: 'El nuevo nombre de usuario es requerido' });
+        }
+        
+        // Verificar si el username ya existe
+        const existing = await query(
+            'SELECT IdUsuario FROM usuarios WHERE Usuario = ? AND IdUsuario != ?',
+            [newUsername, id]
+        );
+        
+        if (existing.length > 0) {
+            return res.status(400).json({ error: 'El nombre de usuario ya está en uso' });
+        }
+        
+        const result = await query(
+            'UPDATE usuarios SET Usuario = ? WHERE IdUsuario = ?',
+            [newUsername, id]
+        );
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        
         res.json({ message: 'Nombre de usuario actualizado exitosamente' });
     } catch (error) {
+        console.error('Error:', error);
         res.status(500).json({ error: 'Error al actualizar usuario' });
     }
 };
@@ -201,10 +298,19 @@ exports.updateUsername = async (req, res) => {
 exports.delete = async (req, res) => {
     try {
         const { id } = req.params;
-        const result = await query('DELETE FROM usuarios WHERE IdUsuario = ?', [id]);
-        if (result.affectedRows === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+        
+        const result = await query(
+            'DELETE FROM usuarios WHERE IdUsuario = ?',
+            [id]
+        );
+        
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+        
         res.json({ message: 'Usuario eliminado exitosamente' });
     } catch (error) {
+        console.error('Error:', error);
         res.status(500).json({ error: 'Error al eliminar usuario' });
     }
 };
@@ -212,26 +318,42 @@ exports.delete = async (req, res) => {
 exports.getByRole = async (req, res) => {
     try {
         const { rol } = req.params;
+        
         const usuarios = await query(
             `SELECT u.IdUsuario, u.Usuario, u.Rol, u.Foto,
-                    m.Nombre as NombreMedico, p.Nombre as NombrePaciente, a.Nombre as NombreAdmin
+                    m.Nombre as NombreMedico, 
+                    p.Nombre as NombrePaciente, 
+                    a.Nombre as NombreAdmin
              FROM usuarios u
              LEFT JOIN medicos m ON u.IdMedico = m.IdMedico
              LEFT JOIN pacientes p ON u.IdPaciente = p.IdPaciente
              LEFT JOIN administradores a ON u.IdAdministrador = a.IdAdministrador
-             WHERE u.Rol = ?`, [rol]
+             WHERE u.Rol = ?
+             ORDER BY u.IdUsuario DESC`,
+            [rol]
         );
+        
         res.json(usuarios);
     } catch (error) {
-        res.status(500).json({ error: 'Error al obtener por rol' });
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Error al obtener usuarios por rol' });
     }
 };
 
 exports.getStats = async (req, res) => {
     try {
-        const stats = await query(`SELECT COUNT(*) as total, SUM(CASE WHEN Rol = 'MEDICO' THEN 1 ELSE 0 END) as medicos FROM usuarios`);
+        const stats = await query(
+            `SELECT 
+                COUNT(*) as total,
+                SUM(CASE WHEN Rol = 'MEDICO' THEN 1 ELSE 0 END) as medicos,
+                SUM(CASE WHEN Rol = 'PACIENTE' THEN 1 ELSE 0 END) as pacientes,
+                SUM(CASE WHEN Rol = 'ADMIN' THEN 1 ELSE 0 END) as administradores
+             FROM usuarios`
+        );
+        
         res.json(stats[0]);
     } catch (error) {
-        res.status(500).json({ error: 'Error stats' });
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Error al obtener estadísticas' });
     }
 };

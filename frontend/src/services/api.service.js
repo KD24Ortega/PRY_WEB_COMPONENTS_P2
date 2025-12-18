@@ -1,7 +1,3 @@
-/**
- * Servicio API - Maneja todas las peticiones HTTP al backend
- */
-
 const API_URL = 'http://localhost:3000/api';
 
 class ApiService {
@@ -9,7 +5,7 @@ class ApiService {
         this.token = localStorage.getItem('token');
     }
 
-    // === CONFIGURACIÓN DE AUTENTICACIÓN ===
+    // Configurar token
     setToken(token) {
         this.token = token;
         localStorage.setItem('token', token);
@@ -28,14 +24,15 @@ class ApiService {
         const headers = {
             'Content-Type': 'application/json'
         };
+
         const token = this.getToken();
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
+
         return headers;
     }
 
-    // Método genérico para hacer peticiones
     async request(endpoint, options = {}) {
         const url = `${API_URL}${endpoint}`;
         const config = {
@@ -45,12 +42,12 @@ class ApiService {
 
         try {
             const response = await fetch(url, config);
-            if (response.status === 204) return null;
-
             const data = await response.json();
+
             if (!response.ok) {
                 throw new Error(data.error || 'Error en la petición');
             }
+
             return data;
         } catch (error) {
             console.error('Error en petición:', error);
@@ -58,7 +55,6 @@ class ApiService {
         }
     }
 
-    // === AUTENTICACIÓN ===
     async login(usuario, password) {
         return this.request('/auth/login', {
             method: 'POST',
@@ -77,44 +73,12 @@ class ApiService {
         return this.request('/auth/verify');
     }
 
-    // === USUARIOS / PERFIL ===
-    
-    /**
-     * Obtiene la lista de usuarios. 
-     * Nota: La visualización de columnas (ocultar ID) se gestiona en el componente Manager.
-     */
-    async getUsuarios() {
-        return this.request('/usuarios');
-    }
-
-    async getUsuariosStats() {
-        return this.request('/usuarios/stats');
-    }
-
-    async updateUsuarioFoto(id, fotoBase64) {
-        return this.request(`/usuarios/${id}/foto`, {
-            method: 'PUT',
-            body: JSON.stringify({ foto: fotoBase64 })
-        });
-    }
-
-    // === ADMINISTRADORES ===
-    
-    /**
-     * Obtiene la lista de administradores.
-     * Nota: Para no mostrar el ID en la tabla, asegúrese de no incluir la columna 'id' en el render del componente.
-     */
-    async getAdministradores() {
-        return this.request('/administradores');
-    }
-
-    async getAdministradorById(id) {
-        return this.request(`/administradores/${id}`);
-    }
-
-    // === ESPECIALIDADES ===
     async getEspecialidades() {
         return this.request('/especialidades');
+    }
+
+    async getEspecialidadesPublic() {
+        return this.request('/auth/especialidades');
     }
 
     async getEspecialidadById(id) {
@@ -141,7 +105,6 @@ class ApiService {
         });
     }
 
-    // === MÉDICOS ===
     async getMedicos() {
         return this.request('/medicos');
     }
@@ -150,7 +113,26 @@ class ApiService {
         return this.request(`/medicos/${id}`);
     }
 
-    // === PACIENTES ===
+    async createMedico(data) {
+        return this.request('/medicos', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updateMedico(id, data) {
+        return this.request(`/medicos/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deleteMedico(id) {
+        return this.request(`/medicos/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
     async getPacientes() {
         return this.request('/pacientes');
     }
@@ -159,19 +141,214 @@ class ApiService {
         return this.request(`/pacientes/${id}`);
     }
 
-    // === CONSULTAS ===
+    async createPaciente(data) {
+        return this.request('/pacientes', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updatePaciente(id, data) {
+        return this.request(`/pacientes/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deletePaciente(id) {
+        return this.request(`/pacientes/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async getAdministradores() {
+        return this.request('/administradores');
+    }
+
+    async getAdministradorById(id) {
+        return this.request(`/administradores/${id}`);
+    }
+
+    async createAdministrador(data) {
+        return this.request('/administradores', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updateAdministrador(id, data) {
+        return this.request(`/administradores/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deleteAdministrador(id) {
+        return this.request(`/administradores/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async getUsuarios() {
+        return this.request('/usuarios');
+    }
+
+    async getUsuarioById(id) {
+        return this.request(`/usuarios/${id}`);
+    }
+
+    async getUsuariosByRole(rol) {
+        return this.request(`/usuarios/rol/${rol}`);
+    }
+
+    async getUsuariosStats() {
+        return this.request('/usuarios/stats');
+    }
+
+    async changePassword(id, currentPassword, newPassword) {
+        return this.request(`/usuarios/${id}/change-password`, {
+            method: 'PUT',
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+    }
+
+    async resetPassword(id, newPassword) {
+        return this.request(`/usuarios/${id}/reset-password`, {
+            method: 'POST',
+            body: JSON.stringify({ newPassword })
+        });
+    }
+
+    async updateUsername(id, newUsername) {
+        return this.request(`/usuarios/${id}/username`, {
+            method: 'PUT',
+            body: JSON.stringify({ newUsername })
+        });
+    }
+
+    async deleteUsuario(id) {
+        return this.request(`/usuarios/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+    async getMedicamentos() {
+        return this.request('/medicamentos');
+    }
+
+    async getMedicamentoById(id) {
+        return this.request(`/medicamentos/${id}`);
+    }
+
+    async createMedicamento(data) {
+        return this.request('/medicamentos', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updateMedicamento(id, data) {
+        return this.request(`/medicamentos/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deleteMedicamento(id) {
+        return this.request(`/medicamentos/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
     async getConsultas() {
         return this.request('/consultas');
     }
 
-    // === RECETAS ===
+    async getConsultaById(id) {
+        return this.request(`/consultas/${id}`);
+    }
+
+    async getConsultasByMedico(idMedico) {
+        return this.request(`/consultas/medico/${idMedico}`);
+    }
+
+    async getConsultasByPaciente(idPaciente) {
+        return this.request(`/consultas/paciente/${idPaciente}`);
+    }
+
+    async createConsulta(data) {
+        return this.request('/consultas', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updateConsulta(id, data) {
+        return this.request(`/consultas/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deleteConsulta(id) {
+        return this.request(`/consultas/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
     async getRecetas() {
         return this.request('/recetas');
     }
 
-    // === MEDICAMENTOS ===
-    async getMedicamentos() {
-        return this.request('/medicamentos');
+    async getRecetasByConsulta(idConsulta) {
+        return this.request(`/recetas/consulta/${idConsulta}`);
+    }
+
+    async getRecetasByPaciente(idPaciente) {
+        return this.request(`/recetas/paciente/${idPaciente}`);
+    }
+
+    async createReceta(data) {
+        return this.request('/recetas', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updateReceta(id, data) {
+        return this.request(`/recetas/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deleteReceta(id) {
+        return this.request(`/recetas/${id}`, {
+            method: 'DELETE'
+        });
+    }
+
+
+    async updateUserPhoto(userId, file) {
+        const formData = new FormData();
+        formData.append('foto', file);
+
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${API_URL}/usuarios/${userId}/foto`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData 
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Error al subir foto');
+        }
+
+        return response.json();
     }
 }
 

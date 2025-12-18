@@ -179,7 +179,6 @@ class AppSidebar extends LitElement {
             detail: { view }
         }));
 
-        // Cerrar sidebar en móvil después de navegar
         if (window.innerWidth < 992) {
             this.mobileOpen = false;
         }

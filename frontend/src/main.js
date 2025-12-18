@@ -1,7 +1,5 @@
-
 import './components/app-root.js';
 
-// Estilos globales adicionales para animaciones
 const animationStyles = document.createElement('style');
 animationStyles.textContent = `
     @keyframes fadeOut {
@@ -19,7 +17,6 @@ animationStyles.textContent = `
 `;
 document.head.appendChild(animationStyles);
 
-// Ocultar loader después de cargar
 window.addEventListener('load', () => {
     setTimeout(() => {
         const loader = document.getElementById('app-loader');
@@ -32,7 +29,6 @@ window.addEventListener('load', () => {
     }, 800);
 });
 
-// Mensajes de consola
 console.log('%c🏥 Sistema Clínico ProyectoVeris', 
     'font-size: 20px; font-weight: bold; color: #0066CC;');
 console.log('%c✅ Aplicación inicializada correctamente', 
