@@ -20,4 +20,7 @@ node server.js
 ejecutar el frontend
 
 cd .\frontend\
+npm run start
+
+cd .\frontend\
  npx http-server . -p 8080

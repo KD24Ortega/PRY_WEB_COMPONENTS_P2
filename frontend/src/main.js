@@ -1,7 +1,3 @@
-/**
- * Archivo principal de la aplicación
- * Inicializa todos los componentes y servicios
- */
 
 import './components/app-root.js';
 

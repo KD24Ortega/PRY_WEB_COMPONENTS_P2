@@ -1,4 +1,4 @@
-import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
+import { LitElement, html, css } from 'lit';
 import apiService from '../../services/api.service.js';
 import '../shared/data-table.js';
 import '../shared/loading-spinner.js';

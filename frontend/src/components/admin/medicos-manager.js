@@ -1,382 +1,566 @@
-import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
+import { LitElement, html, css } from 'lit';
 import apiService from '../../services/api.service.js';
 import '../shared/data-table.js';
 import '../shared/loading-spinner.js';
 
 class MedicosManager extends LitElement {
-    static styles = css`
-        :host {
-            display: block;
-        }
+  static styles = css`
+    :host { display: block; }
 
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
 
-        .page-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 2rem;
-            font-weight: 700;
-            color: #0066CC;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .page-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0066CC;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+    }
 
-        .btn-add {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #0066CC 0%, #00D9FF 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+    .note {
+      color: #5A7C92;
+      font-size: 0.95rem;
+      margin-top: 6px;
+    }
 
-        .btn-add:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 102, 204, 0.3);
-        }
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+      padding: 12px;
+    }
 
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            backdrop-filter: blur(4px);
-        }
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 26px;
+      max-width: 620px;
+      width: 100%;
+      max-height: 92vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
 
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #E0E6ED;
+      gap: 12px;
+    }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #E0E6ED;
-        }
+    .modal-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #0066CC;
+      margin: 0;
+    }
 
-        .modal-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #0066CC;
-        }
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 1.35rem;
+      cursor: pointer;
+      color: #5A7C92;
+      transition: all 0.3s ease;
+    }
 
-        .btn-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #5A7C92;
-            transition: all 0.3s ease;
-        }
+    .btn-close:hover { color: #DC3545; }
 
-        .btn-close:hover {
-            color: #DC3545;
-        }
+    .form-group { margin-bottom: 16px; }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+    label {
+      display: block;
+      font-weight: 600;
+      color: #2C5282;
+      margin-bottom: 8px;
+      font-size: 0.95rem;
+    }
 
-        label {
-            display: block;
-            font-weight: 600;
-            color: #2C5282;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-        }
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #E0E6ED;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      transition: all 0.3s ease;
+    }
 
-        input, select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #E0E6ED;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-        }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #0066CC;
+      box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
+    }
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: #0066CC;
-            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
-        }
+    input[disabled], select[disabled] {
+      background: #F8F9FA;
+      color: #5A7C92;
+      cursor: not-allowed;
+    }
 
-        .modal-footer {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 2px solid #E0E6ED;
-        }
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 18px;
+      padding-top: 16px;
+      border-top: 2px solid #E0E6ED;
+      flex-wrap: wrap;
+    }
 
-        .btn-cancel {
-            padding: 10px 20px;
-            background: #F8F9FA;
-            color: #5A7C92;
-            border: 2px solid #E0E6ED;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+    .btn-cancel {
+      padding: 10px 18px;
+      background: #F8F9FA;
+      color: #5A7C92;
+      border: 2px solid #E0E6ED;
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
 
-        .btn-cancel:hover {
-            background: #E9ECEF;
-        }
+    .btn-cancel:hover { background: #E9ECEF; }
 
-        .btn-save {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #0066CC 0%, #00D9FF 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+    .btn-primary {
+      padding: 10px 18px;
+      background: linear-gradient(135deg, #0066CC 0%, #00D9FF 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
 
-        .btn-save:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
-        }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(0, 102, 204, 0.25);
+    }
 
-        .btn-save:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-    `;
+    .btn-danger {
+      padding: 10px 18px;
+      background: #DC3545;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
 
-    static properties = {
-        medicos: { type: Array },
-        especialidades: { type: Array },
-        loading: { type: Boolean },
-        showModal: { type: Boolean },
-        editingMedico: { type: Object },
-        saving: { type: Boolean }
+    .btn-danger:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 20px rgba(220, 53, 69, 0.22);
+    }
+
+    .btn-primary:disabled, .btn-danger:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .msg-box {
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #E0E6ED;
+      background: #F8F9FA;
+      color: #2C5282;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      line-height: 1.35;
+    }
+
+    .msg-icon {
+      font-size: 1.35rem;
+      line-height: 1;
+      margin-top: 2px;
+    }
+
+    .msg-title {
+      font-weight: 800;
+      margin: 0 0 4px 0;
+    }
+
+    .msg-text {
+      margin: 0;
+      color: #2C5282;
+    }
+
+    .msg-success { border-color: rgba(25, 135, 84, 0.35); background: rgba(25, 135, 84, 0.08); }
+    .msg-error { border-color: rgba(220, 53, 69, 0.35); background: rgba(220, 53, 69, 0.08); }
+    .msg-info { border-color: rgba(13, 110, 253, 0.35); background: rgba(13, 110, 253, 0.08); }
+  `;
+
+  static properties = {
+    medicos: { type: Array },
+    especialidades: { type: Array },
+    loading: { type: Boolean },
+
+    showModal: { type: Boolean },
+    modalMode: { type: String }, // view | edit
+    selectedMedico: { type: Object },
+    saving: { type: Boolean },
+
+    showMsgModal: { type: Boolean },
+    msgType: { type: String },
+    msgTitle: { type: String },
+    msgText: { type: String },
+
+    showConfirmModal: { type: Boolean },
+    confirmTitle: { type: String },
+    confirmText: { type: String },
+    pendingDeleteItem: { type: Object },
+    deleting: { type: Boolean }
+  };
+
+  constructor() {
+    super();
+    this.medicos = [];
+    this.especialidades = [];
+    this.loading = true;
+
+    this.showModal = false;
+    this.modalMode = 'view';
+    this.selectedMedico = null;
+    this.saving = false;
+
+    this.showMsgModal = false;
+    this.msgType = 'info';
+    this.msgTitle = '';
+    this.msgText = '';
+
+    this.showConfirmModal = false;
+    this.confirmTitle = '';
+    this.confirmText = '';
+    this.pendingDeleteItem = null;
+    this.deleting = false;
+
+    this.loadData();
+  }
+
+  async loadData() {
+    try {
+      const [medicosData, especialidadesData] = await Promise.all([
+        apiService.getMedicos(),
+        apiService.getEspecialidades()
+      ]);
+      this.medicos = medicosData;
+      this.especialidades = especialidadesData;
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+      this.showMessage('error', 'Error', 'Error al cargar datos');
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  showMessage(type, title, text) {
+    this.msgType = type;
+    this.msgTitle = title;
+    this.msgText = text;
+    this.showMsgModal = true;
+  }
+
+  closeMessage() {
+    this.showMsgModal = false;
+    this.msgTitle = '';
+    this.msgText = '';
+    this.msgType = 'info';
+  }
+
+  openConfirmDelete(item, title, text) {
+    this.pendingDeleteItem = item;
+    this.confirmTitle = title;
+    this.confirmText = text;
+    this.showConfirmModal = true;
+    this.deleting = false;
+  }
+
+  closeConfirm() {
+    this.showConfirmModal = false;
+    this.pendingDeleteItem = null;
+    this.confirmTitle = '';
+    this.confirmText = '';
+    this.deleting = false;
+  }
+
+  openViewModal(e) {
+    this.selectedMedico = e.detail.item;
+    this.modalMode = 'view';
+    this.showModal = true;
+  }
+
+  openEditModal(e) {
+    this.selectedMedico = e.detail.item;
+    this.modalMode = 'edit';
+    this.showModal = true;
+  }
+
+  closeModal() {
+    this.showModal = false;
+    this.selectedMedico = null;
+    this.modalMode = 'view';
+  }
+
+  async handleSubmit(e) {
+    e.preventDefault();
+
+    if (!this.selectedMedico) {
+      this.showMessage('error', 'Error', 'No hay médico seleccionado para editar');
+      return;
+    }
+
+    const form = e.target;
+    const data = {
+      nombre: form.nombre.value,
+      idEspecialidad: parseInt(form.especialidad.value),
+      foto: form.foto.value || 'default.jpg'
     };
 
-    constructor() {
-        super();
-        this.medicos = [];
-        this.especialidades = [];
-        this.loading = true;
-        this.showModal = false;
-        this.editingMedico = null;
-        this.saving = false;
-        this.loadData();
+    this.saving = true;
+
+    try {
+      await apiService.updateMedico(this.selectedMedico.IdMedico, data);
+      this.showMessage('success', 'Éxito', 'Médico actualizado exitosamente');
+      this.closeModal();
+      this.loadData();
+    } catch (error) {
+      console.error('Error:', error);
+      this.showMessage('error', 'Error', 'Error al guardar médico');
+    } finally {
+      this.saving = false;
     }
+  }
 
-    async loadData() {
-        try {
-            const [medicosData, especialidadesData] = await Promise.all([
-                apiService.getMedicos(),
-                apiService.getEspecialidades()
-            ]);
-            this.medicos = medicosData;
-            this.especialidades = especialidadesData;
-        } catch (error) {
-            console.error('Error al cargar datos:', error);
-            this.showNotification('Error al cargar datos', 'error');
-        } finally {
-            this.loading = false;
-        }
+  handleDelete(e) {
+    const medico = e.detail.item;
+    this.openConfirmDelete(
+      medico,
+      'Confirmar eliminación',
+      `¿Estás seguro de eliminar al médico "${medico.Nombre}"?`
+    );
+  }
+
+  async confirmDelete() {
+    const medico = this.pendingDeleteItem;
+    if (!medico) return;
+
+    this.deleting = true;
+
+    try {
+      await apiService.deleteMedico(medico.IdMedico);
+      this.showMessage('success', 'Éxito', 'Médico eliminado exitosamente');
+      this.closeConfirm();
+      this.loadData();
+    } catch (error) {
+      console.error('Error:', error);
+      this.showMessage('error', 'Error', 'Error al eliminar médico');
+      this.closeConfirm();
+    } finally {
+      this.deleting = false;
     }
+  }
 
-    openCreateModal() {
-        this.editingMedico = null;
-        this.showModal = true;
-    }
+  renderMessageModal() {
+    if (!this.showMsgModal) return '';
 
-    openEditModal(e) {
-        this.editingMedico = e.detail.item;
-        this.showModal = true;
-    }
+    const icon =
+      this.msgType === 'success' ? 'bi-check-circle-fill' :
+      this.msgType === 'error' ? 'bi-x-circle-fill' : 'bi-info-circle-fill';
 
-    closeModal() {
-        this.showModal = false;
-        this.editingMedico = null;
-    }
+    const boxClass =
+      this.msgType === 'success' ? 'msg-box msg-success' :
+      this.msgType === 'error' ? 'msg-box msg-error' : 'msg-box msg-info';
 
-    async handleSubmit(e) {
-        e.preventDefault();
-        
-        const form = e.target;
-        const data = {
-            nombre: form.nombre.value,
-            idEspecialidad: parseInt(form.especialidad.value),
-            foto: form.foto.value || 'default.jpg'
-        };
+    return html`
+      <div class="modal-overlay" @click=${this.closeMessage}>
+        <div class="modal-content" @click=${(e) => e.stopPropagation()}>
+          <div class="modal-header">
+            <h3 class="modal-title">${this.msgTitle || 'Mensaje'}</h3>
+            <button class="btn-close" @click=${this.closeMessage}>
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
 
-        this.saving = true;
-
-        try {
-            if (this.editingMedico) {
-                await apiService.updateMedico(this.editingMedico.IdMedico, data);
-                this.showNotification('Médico actualizado exitosamente', 'success');
-            } else {
-                await apiService.createMedico(data);
-                this.showNotification('Médico creado exitosamente', 'success');
-            }
-
-            this.closeModal();
-            this.loadData();
-        } catch (error) {
-            console.error('Error:', error);
-            this.showNotification('Error al guardar médico', 'error');
-        } finally {
-            this.saving = false;
-        }
-    }
-
-    async handleDelete(e) {
-        const medico = e.detail.item;
-        
-        if (confirm(`¿Estás seguro de eliminar al médico "${medico.Nombre}"?`)) {
-            try {
-                await apiService.deleteMedico(medico.IdMedico);
-                this.showNotification('Médico eliminado exitosamente', 'success');
-                this.loadData();
-            } catch (error) {
-                console.error('Error:', error);
-                this.showNotification('Error al eliminar médico', 'error');
-            }
-        }
-    }
-
-    showNotification(message, type) {
-        alert(message);
-    }
-
-    renderModal() {
-        if (!this.showModal) return '';
-
-        const medico = this.editingMedico;
-
-        return html`
-            <div class="modal-overlay" @click=${this.closeModal}>
-                <div class="modal-content" @click=${(e) => e.stopPropagation()}>
-                    <div class="modal-header">
-                        <h3 class="modal-title">
-                            ${medico ? 'Editar Médico' : 'Nuevo Médico'}
-                        </h3>
-                        <button class="btn-close" @click=${this.closeModal}>
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                    </div>
-
-                    <form @submit=${this.handleSubmit}>
-                        <div class="form-group">
-                            <label>Nombre Completo *</label>
-                            <input 
-                                type="text" 
-                                name="nombre" 
-                                .value=${medico?.Nombre || ''}
-                                placeholder="Dr. Juan Pérez"
-                                required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Especialidad *</label>
-                            <select 
-                                name="especialidad" 
-                                required>
-                                <option value="">Selecciona una especialidad</option>
-                                ${this.especialidades.map(esp => html`
-                                    <option 
-                                        value="${esp.IdEspecialidad}"
-                                        ?selected=${medico?.IdEspecialidad === esp.IdEspecialidad}>
-                                        ${esp.Descripcion}
-                                    </option>
-                                `)}
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Foto (URL o nombre de archivo)</label>
-                            <input 
-                                type="text" 
-                                name="foto" 
-                                .value=${medico?.Foto || ''}
-                                placeholder="default.jpg">
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn-cancel" @click=${this.closeModal}>
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn-save" ?disabled=${this.saving}>
-                                ${this.saving ? 'Guardando...' : 'Guardar'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+          <div class=${boxClass}>
+            <i class="bi ${icon} msg-icon"></i>
+            <div>
+              <p class="msg-title">${this.msgTitle || 'Mensaje'}</p>
+              <p class="msg-text">${this.msgText}</p>
             </div>
-        `;
-    }
+          </div>
 
-    render() {
-        if (this.loading) {
-            return html`<loading-spinner text="Cargando médicos..."></loading-spinner>`;
-        }
+          <div class="modal-footer">
+            <button class="btn-primary" @click=${this.closeMessage}>Aceptar</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
-        const columns = [
-            { header: 'ID', field: 'IdMedico' },
-            { header: 'Nombre', field: 'Nombre' },
-            { header: 'Especialidad', field: 'Especialidad' },
-            { header: 'Foto', field: 'Foto' }
-        ];
+  renderConfirmModal() {
+    if (!this.showConfirmModal) return '';
 
-        return html`
-            <div class="page-header">
-                <h1 class="page-title">
-                    <i class="bi bi-person-badge"></i>
-                    Médicos
-                </h1>
-                <button class="btn-add" @click=${this.openCreateModal}>
-                    <i class="bi bi-plus-circle"></i>
-                    Nuevo Médico
+    return html`
+      <div class="modal-overlay" @click=${this.closeConfirm}>
+        <div class="modal-content" @click=${(e) => e.stopPropagation()}>
+          <div class="modal-header">
+            <h3 class="modal-title">${this.confirmTitle || 'Confirmación'}</h3>
+            <button class="btn-close" @click=${this.closeConfirm}>
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+
+          <div class="msg-box msg-error">
+            <i class="bi bi-exclamation-triangle-fill msg-icon"></i>
+            <div>
+              <p class="msg-title">Atención</p>
+              <p class="msg-text">${this.confirmText}</p>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-cancel" @click=${this.closeConfirm}>Cancelar</button>
+            <button class="btn-danger" ?disabled=${this.deleting} @click=${this.confirmDelete}>
+              ${this.deleting ? 'Eliminando...' : 'Eliminar'}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderViewEditModal() {
+    if (!this.showModal || !this.selectedMedico) return '';
+
+    const medico = this.selectedMedico;
+    const isView = this.modalMode === 'view';
+
+    return html`
+      <div class="modal-overlay" @click=${this.closeModal}>
+        <div class="modal-content" @click=${(e) => e.stopPropagation()}>
+          <div class="modal-header">
+            <h3 class="modal-title">${isView ? 'Ver Médico' : 'Editar Médico'}</h3>
+            <button class="btn-close" @click=${this.closeModal}>
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+
+          ${isView ? html`
+            <div class="form-group">
+              <label>ID</label>
+              <input type="text" .value=${String(medico.IdMedico ?? '')} disabled>
+            </div>
+            <div class="form-group">
+              <label>Nombre</label>
+              <input type="text" .value=${medico.Nombre || ''} disabled>
+            </div>
+            <div class="form-group">
+              <label>Especialidad</label>
+              <input type="text" .value=${medico.Especialidad || ''} disabled>
+            </div>
+            <div class="form-group">
+              <label>Foto</label>
+              <input type="text" .value=${medico.Foto || ''} disabled>
+            </div>
+
+            <div class="modal-footer">
+              <button class="btn-primary" @click=${this.closeModal}>Cerrar</button>
+            </div>
+          ` : html`
+            <form @submit=${this.handleSubmit}>
+              <div class="form-group">
+                <label>Nombre Completo *</label>
+                <input type="text" name="nombre" .value=${medico.Nombre || ''} required>
+              </div>
+
+              <div class="form-group">
+                <label>Especialidad *</label>
+                <select name="especialidad" required>
+                  <option value="">Selecciona una especialidad</option>
+                  ${this.especialidades.map(esp => html`
+                    <option value="${esp.IdEspecialidad}" ?selected=${medico.IdEspecialidad === esp.IdEspecialidad}>
+                      ${esp.Descripcion}
+                    </option>
+                  `)}
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label>Foto (URL o nombre de archivo)</label>
+                <input type="text" name="foto" .value=${medico.Foto || ''} placeholder="default.jpg">
+              </div>
+
+              <div class="modal-footer">
+                <button type="button" class="btn-cancel" @click=${this.closeModal}>Cancelar</button>
+                <button type="submit" class="btn-primary" ?disabled=${this.saving}>
+                  ${this.saving ? 'Guardando...' : 'Guardar'}
                 </button>
-            </div>
+              </div>
+            </form>
+          `}
+        </div>
+      </div>
+    `;
+  }
 
-            <data-table
-                title="Listado de Médicos"
-                .columns=${columns}
-                .data=${this.medicos}
-                @edit=${this.openEditModal}
-                @delete=${this.handleDelete}>
-            </data-table>
-
-            ${this.renderModal()}
-        `;
+  render() {
+    if (this.loading) {
+      return html`<loading-spinner text="Cargando médicos..."></loading-spinner>`;
     }
+
+    const columns = [
+      { header: 'ID', field: 'IdMedico' },
+      { header: 'Nombre', field: 'Nombre' },
+      { header: 'Especialidad', field: 'Especialidad' },
+      { header: 'Foto', field: 'Foto' }
+    ];
+
+    return html`
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">
+            <i class="bi bi-person-badge"></i>
+            Médicos
+          </h1>
+          <div class="note">El administrador solo puede ver, editar y eliminar. La creación está deshabilitada.</div>
+        </div>
+      </div>
+
+      <data-table
+        title="Listado de Médicos"
+        .columns=${columns}
+        .data=${this.medicos}
+        @view=${this.openViewModal}
+        @edit=${this.openEditModal}
+        @delete=${this.handleDelete}>
+      </data-table>
+
+      ${this.renderViewEditModal()}
+      ${this.renderConfirmModal()}
+      ${this.renderMessageModal()}
+    `;
+  }
 }
 
 customElements.define('medicos-manager', MedicosManager);
