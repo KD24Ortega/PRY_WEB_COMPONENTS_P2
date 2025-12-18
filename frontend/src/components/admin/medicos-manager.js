@@ -619,10 +619,7 @@ class MedicosManager extends LitElement {
                 <span class="detail-label">Especialidad</span>
                 <span class="detail-value">${medico.Especialidad}</span>
               </div>
-              <div class="detail-item">
-                <span class="detail-label">Foto</span>
-                <span class="detail-value">${medico.Foto}</span>
-              </div>
+           
             </div>
 
             <div class="modal-footer">
@@ -647,10 +644,7 @@ class MedicosManager extends LitElement {
                 </select>
               </div>
 
-              <div class="form-group">
-                <label>Foto (URL o nombre de archivo)</label>
-                <input type="text" name="foto" .value=${medico.Foto || ''} placeholder="default.jpg">
-              </div>
+              
 
               <div class="modal-footer">
                 <button type="button" class="btn-cancel" @click=${this.closeModal}>Cancelar</button>

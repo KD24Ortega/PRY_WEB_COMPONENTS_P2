@@ -1,11 +1,10 @@
-const API_URL = 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://10.40.32.75:3000/api';
 
 class ApiService {
     constructor() {
         this.token = localStorage.getItem('token');
     }
 
-    // Configurar token
     setToken(token) {
         this.token = token;
         localStorage.setItem('token', token);

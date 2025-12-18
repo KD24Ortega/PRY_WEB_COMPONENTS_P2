@@ -131,26 +131,22 @@ exports.updateFoto = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Verificar que se subió un archivo
         if (!req.file) {
             return res.status(400).json({ error: 'No se subió ningún archivo' });
         }
 
-        // Obtener el usuario actual para eliminar foto anterior
         const usuarios = await query(
             'SELECT Foto FROM usuarios WHERE IdUsuario = ?',
             [id]
         );
 
         if (usuarios.length === 0) {
-            // Si no existe el usuario, eliminar el archivo subido
             fs.unlinkSync(req.file.path);
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
 
         const usuarioActual = usuarios[0];
 
-        // Eliminar foto anterior si existe y no es la predeterminada
         if (usuarioActual.Foto && 
             usuarioActual.Foto !== 'default.jpg' && 
             usuarioActual.Foto !== '/uploads/avatars/default.jpg') {
@@ -166,7 +162,6 @@ exports.updateFoto = async (req, res) => {
             }
         }
 
-        // Guardar la ruta relativa de la nueva foto
         const fotoPath = `/uploads/avatars/${req.file.filename}`;
 
         const result = await query(
@@ -185,7 +180,6 @@ exports.updateFoto = async (req, res) => {
     } catch (error) {
         console.error('Error al actualizar foto:', error);
         
-        // Si hay error, eliminar el archivo subido
         if (req.file && fs.existsSync(req.file.path)) {
             fs.unlinkSync(req.file.path);
         }
@@ -269,7 +263,6 @@ exports.updateUsername = async (req, res) => {
             return res.status(400).json({ error: 'El nuevo nombre de usuario es requerido' });
         }
         
-        // Verificar si el username ya existe
         const existing = await query(
             'SELECT IdUsuario FROM usuarios WHERE Usuario = ? AND IdUsuario != ?',
             [newUsername, id]

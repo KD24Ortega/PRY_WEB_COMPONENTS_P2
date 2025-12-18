@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 const jwtConfig = require('../config/jwt.config');
 
-// Verificar token JWT
 const verifyToken = (req, res, next) => {
     const token = req.headers['authorization']?.split(' ')[1];
 

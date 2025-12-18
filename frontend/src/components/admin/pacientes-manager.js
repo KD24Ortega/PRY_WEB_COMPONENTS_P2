@@ -668,10 +668,7 @@ class PacientesManager extends LitElement {
                 <span class="detail-label">Peso</span>
                 <span class="detail-value">${paciente.Peso} kg</span>
               </div>
-              <div class="detail-item full-width">
-                <span class="detail-label">Foto</span>
-                <span class="detail-value">${paciente.Foto}</span>
-              </div>
+             
             </div>
 
             <div class="summary">
@@ -713,10 +710,7 @@ class PacientesManager extends LitElement {
                   <label>Peso (kg)</label>
                   <input type="number" name="peso" .value=${String(paciente.Peso ?? '')} min="0" max="500" step="0.1">
                 </div>
-                <div class="form-group full-width">
-                  <label>Foto (URL o nombre de archivo)</label>
-                  <input type="text" name="foto" .value=${paciente.Foto || ''} placeholder="default.jpg">
-                </div>
+              
               </div>
 
               <div class="modal-footer">

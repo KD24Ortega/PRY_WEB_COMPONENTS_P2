@@ -80,7 +80,6 @@ exports.create = async (req, res) => {
             [idConsulta, idMedicamento, cantidad]
         );
         
-        // Obtener la receta completa con todos los datos
         const recetaCompleta = await query(
             `SELECT r.*, 
                     c.FechaConsulta, c.Diagnostico,
