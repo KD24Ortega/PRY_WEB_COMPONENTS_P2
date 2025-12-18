@@ -1,371 +1,337 @@
-import { LitElement, html, css } from 'lit';
+import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
 import apiService from '../../services/api.service.js';
 import '../shared/data-table.js';
 import '../shared/loading-spinner.js';
 
 class MedicamentosManager extends LitElement {
-    static styles = css`
-        :host {
-            display: block;
-        }
+  static styles = css`
+    :host {
+      display: block;
+    }
 
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
+    * {
+      box-sizing: border-box !important;
+    }
 
-        .page-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 2rem;
-            font-weight: 700;
-            color: #0066CC;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
 
-        .btn-add {
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #0066CC 0%, #00D9FF 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+    .page-title {
+      font-family: 'Poppins', sans-serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #0066CC;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+    }
 
-        .btn-add:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 102, 204, 0.3);
-        }
+    .btn-add {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #0066CC 0%, #00D9FF 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            backdrop-filter: blur(4px);
-        }
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      backdrop-filter: blur(4px);
+      padding: 20px;
+    }
 
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            padding: 30px;
-            max-width: 600px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 550px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
 
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #E0E6ED;
-        }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #E0E6ED;
+    }
 
-        .modal-title {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: #0066CC;
-        }
+    .form-group {
+      margin-bottom: 20px;
+      width: 100%;
+    }
 
-        .btn-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: #5A7C92;
-            transition: all 0.3s ease;
-        }
+    label {
+      display: block;
+      font-weight: 600;
+      color: #2C5282;
+      margin-bottom: 8px;
+    }
 
-        .btn-close:hover {
-            color: #DC3545;
-        }
+    input, select {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #E0E6ED;
+      border-radius: 8px;
+      font-size: 0.95rem;
+    }
 
-        .form-group {
-            margin-bottom: 20px;
-        }
+    .detail-row {
+      display: flex;
+      padding: 12px 0;
+      border-bottom: 1px solid #F0F4F8;
+    }
+    .detail-label {
+      width: 120px;
+      font-weight: 700;
+      color: #5A7C92;
+    }
 
-        label {
-            display: block;
-            font-weight: 600;
-            color: #2C5282;
-            margin-bottom: 8px;
-            font-size: 0.95rem;
-        }
+    .modal-footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 25px;
+    }
 
-        input, select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #E0E6ED;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-        }
+    .btn-primary {
+      padding: 10px 25px;
+      background: linear-gradient(135deg, #0066CC 0%, #00D9FF 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
 
-        input:focus, select:focus {
-            outline: none;
-            border-color: #0066CC;
-            box-shadow: 0 0 0 4px rgba(0, 102, 204, 0.1);
-        }
+    .btn-danger {
+      padding: 10px 25px;
+      background: linear-gradient(135deg, #DC3545 0%, #C82333 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
 
-        .modal-footer {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 2px solid #E0E6ED;
-        }
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 15px 20px;
+      border-radius: 8px;
+      z-index: 3000;
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      animation: slideIn 0.3s ease;
+    }
+    .success { background: #28a745; }
+    .error { background: #dc3545; }
 
-        .btn-cancel {
-            padding: 10px 20px;
-            background: #F8F9FA;
-            color: #5A7C92;
-            border: 2px solid #E0E6ED;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  `;
 
-        .btn-cancel:hover {
-            background: #E9ECEF;
-        }
+  static properties = {
+    medicamentos: { type: Array },
+    loading: { type: Boolean },
+    showModal: { type: Boolean },
+    showConfirmModal: { type: Boolean }, // Propiedad para el modal de eliminar
+    editingMedicamento: { type: Object },
+    viewingMedicamento: { type: Object },
+    pendingDeleteItem: { type: Object }, // Guardar ítem a eliminar
+    saving: { type: Boolean },
+    notification: { type: Object }
+  };
 
-        .btn-save {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #0066CC 0%, #00D9FF 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+  constructor() {
+    super();
+    this.medicamentos = [];
+    this.loading = true;
+    this.showModal = false;
+    this.showConfirmModal = false;
+    this.editingMedicamento = null;
+    this.viewingMedicamento = null;
+    this.pendingDeleteItem = null;
+    this.loadMedicamentos();
+  }
 
-        .btn-save:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
-        }
+  async loadMedicamentos() {
+    try {
+      this.medicamentos = await apiService.getMedicamentos();
+    } catch (error) {
+      this.showNotification('Error al cargar datos', 'error');
+    } finally {
+      this.loading = false;
+    }
+  }
 
-        .btn-save:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
+  showNotification(message, type) {
+    this.notification = { message, type };
+    setTimeout(() => { this.notification = null; }, 3000);
+  }
+
+  // Abre el modal de confirmación en lugar de usar alert
+  handleDeleteRequest(e) {
+    this.pendingDeleteItem = e.detail.item;
+    this.showConfirmModal = true;
+  }
+
+  async confirmDelete() {
+    try {
+      await apiService.deleteMedicamento(this.pendingDeleteItem.IdMedicamento);
+      this.showNotification('Medicamento eliminado correctamente', 'success');
+      this.showConfirmModal = false;
+      this.loadMedicamentos();
+    } catch (error) {
+      this.showNotification('Error al eliminar', 'error');
+    }
+  }
+
+  async handleSubmit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const data = { nombre: form.nombre.value, tipo: form.tipo.value };
+    this.saving = true;
+    try {
+      if (this.editingMedicamento) {
+        await apiService.updateMedicamento(this.editingMedicamento.IdMedicamento, data);
+        this.showNotification('Medicamento actualizado', 'success');
+      } else {
+        await apiService.createMedicamento(data);
+        this.showNotification('Medicamento creado exitosamente', 'success');
+      }
+      this.showModal = false;
+      this.loadMedicamentos();
+    } catch (error) {
+      this.showNotification('Error al guardar', 'error');
+    } finally {
+      this.saving = false;
+    }
+  }
+
+  renderConfirmModal() {
+    if (!this.showConfirmModal) return '';
+    return html`
+      <div class="modal-overlay" @click=${() => this.showConfirmModal = false}>
+        <div class="modal-content" @click=${e => e.stopPropagation()}>
+          <div class="modal-header">
+            <h3 style="color: #DC3545; margin:0;">Confirmar Eliminación</h3>
+          </div>
+          <p>¿Estás seguro de que deseas eliminar <strong>${this.pendingDeleteItem?.Nombre}</strong>?</p>
+          <div class="modal-footer">
+            <button class="btn-primary" style="background: #ccc" @click=${() => this.showConfirmModal = false}>Cancelar</button>
+            <button class="btn-danger" @click=${this.confirmDelete}>Eliminar</button>
+          </div>
+        </div>
+      </div>
     `;
+  }
 
-    static properties = {
-        medicamentos: { type: Array },
-        loading: { type: Boolean },
-        showModal: { type: Boolean },
-        editingMedicamento: { type: Object },
-        saving: { type: Boolean }
-    };
+  renderViewModal() {
+    if (!this.viewingMedicamento) return '';
+    const med = this.viewingMedicamento;
+    return html`
+      <div class="modal-overlay" @click=${() => this.viewingMedicamento = null}>
+        <div class="modal-content" @click=${e => e.stopPropagation()}>
+          <div class="modal-header">
+            <h3 style="color: #0066CC; margin:0;">Detalles</h3>
+            <button style="border:none; background:none; cursor:pointer; font-size:1.5rem;" @click=${() => this.viewingMedicamento = null}>&times;</button>
+          </div>
+          <div class="detail-row"><div class="detail-label">ID:</div><div>${med.IdMedicamento}</div></div>
+          <div class="detail-row"><div class="detail-label">Nombre:</div><div>${med.Nombre}</div></div>
+          <div class="detail-row"><div class="detail-label">Tipo:</div><div>${med.Tipo}</div></div>
+          <div class="modal-footer">
+            <button class="btn-primary" @click=${() => this.viewingMedicamento = null}>Cerrar</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
-    constructor() {
-        super();
-        this.medicamentos = [];
-        this.loading = true;
-        this.showModal = false;
-        this.editingMedicamento = null;
-        this.saving = false;
-        this.loadMedicamentos();
-    }
+  render() {
+    if (this.loading) return html`<loading-spinner></loading-spinner>`;
+    return html`
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+      <div class="page-header">
+        <h1 class="page-title"><i class="bi bi-capsule"></i> Medicamentos</h1>
+        <button class="btn-add" @click=${() => { this.editingMedicamento = null; this.showModal = true; }}>
+          <i class="bi bi-plus-circle"></i> Nuevo
+        </button>
+      </div>
 
-    async loadMedicamentos() {
-        try {
-            this.medicamentos = await apiService.getMedicamentos();
-        } catch (error) {
-            console.error('Error al cargar medicamentos:', error);
-            this.showNotification('Error al cargar medicamentos', 'error');
-        } finally {
-            this.loading = false;
-        }
-    }
+      <data-table
+        .columns=${[{header:'ID', field:'IdMedicamento'}, {header:'Nombre', field:'Nombre'}, {header:'Tipo', field:'Tipo'}]}
+        .data=${this.medicamentos}
+        @view=${(e) => this.viewingMedicamento = e.detail.item}
+        @edit=${(e) => { this.editingMedicamento = e.detail.item; this.showModal = true; }}
+        @delete=${this.handleDeleteRequest}>
+      </data-table>
 
-    openCreateModal() {
-        this.editingMedicamento = null;
-        this.showModal = true;
-    }
-
-    openEditModal(e) {
-        this.editingMedicamento = e.detail.item;
-        this.showModal = true;
-    }
-
-    closeModal() {
-        this.showModal = false;
-        this.editingMedicamento = null;
-    }
-
-    async handleSubmit(e) {
-        e.preventDefault();
-        
-        const form = e.target;
-        const data = {
-            nombre: form.nombre.value,
-            tipo: form.tipo.value
-        };
-
-        this.saving = true;
-
-        try {
-            if (this.editingMedicamento) {
-                await apiService.updateMedicamento(this.editingMedicamento.IdMedicamento, data);
-                this.showNotification('Medicamento actualizado exitosamente', 'success');
-            } else {
-                await apiService.createMedicamento(data);
-                this.showNotification('Medicamento creado exitosamente', 'success');
-            }
-
-            this.closeModal();
-            this.loadMedicamentos();
-        } catch (error) {
-            console.error('Error:', error);
-            this.showNotification('Error al guardar medicamento', 'error');
-        } finally {
-            this.saving = false;
-        }
-    }
-
-    async handleDelete(e) {
-        const medicamento = e.detail.item;
-        
-        if (confirm(`¿Estás seguro de eliminar el medicamento "${medicamento.Nombre}"?`)) {
-            try {
-                await apiService.deleteMedicamento(medicamento.IdMedicamento);
-                this.showNotification('Medicamento eliminado exitosamente', 'success');
-                this.loadMedicamentos();
-            } catch (error) {
-                console.error('Error:', error);
-                this.showNotification('Error al eliminar medicamento', 'error');
-            }
-        }
-    }
-
-    showNotification(message, type) {
-        alert(message);
-    }
-
-    renderModal() {
-        if (!this.showModal) return '';
-
-        const medicamento = this.editingMedicamento;
-
-        return html`
-         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
-       
-            <div class="modal-overlay" @click=${this.closeModal}>
-                <div class="modal-content" @click=${(e) => e.stopPropagation()}>
-                    <div class="modal-header">
-                        <h3 class="modal-title">
-                            ${medicamento ? 'Editar Medicamento' : 'Nuevo Medicamento'}
-                        </h3>
-                        <button class="btn-close" @click=${this.closeModal}>
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                    </div>
-
-                    <form @submit=${this.handleSubmit}>
-                        <div class="form-group">
-                            <label>Nombre del Medicamento *</label>
-                            <input 
-                                type="text" 
-                                name="nombre" 
-                                .value=${medicamento?.Nombre || ''}
-                                placeholder="Ej: Paracetamol"
-                                required>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Tipo *</label>
-                            <select name="tipo" required>
-                                <option value="">Selecciona un tipo</option>
-                                <option value="Tableta" ?selected=${medicamento?.Tipo === 'Tableta'}>Tableta</option>
-                                <option value="Cápsula" ?selected=${medicamento?.Tipo === 'Cápsula'}>Cápsula</option>
-                                <option value="Jarabe" ?selected=${medicamento?.Tipo === 'Jarabe'}>Jarabe</option>
-                                <option value="Inyectable" ?selected=${medicamento?.Tipo === 'Inyectable'}>Inyectable</option>
-                                <option value="Crema" ?selected=${medicamento?.Tipo === 'Crema'}>Crema</option>
-                                <option value="Gotas" ?selected=${medicamento?.Tipo === 'Gotas'}>Gotas</option>
-                                <option value="Inhalador" ?selected=${medicamento?.Tipo === 'Inhalador'}>Inhalador</option>
-                                <option value="Supositorio" ?selected=${medicamento?.Tipo === 'Supositorio'}>Supositorio</option>
-                            </select>
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn-cancel" @click=${this.closeModal}>
-                                Cancelar
-                            </button>
-                            <button type="submit" class="btn-save" ?disabled=${this.saving}>
-                                ${this.saving ? 'Guardando...' : 'Guardar'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
+      ${this.showModal ? html`
+        <div class="modal-overlay">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3 style="color: #0066CC; margin:0;">${this.editingMedicamento ? 'Editar' : 'Nuevo'}</h3>
+              <button style="border:none; background:none; cursor:pointer; font-size:1.5rem;" @click=${() => this.showModal = false}>&times;</button>
             </div>
-        `;
-    }
+            <form @submit=${this.handleSubmit}>
+              <div class="form-group">
+                <label>Nombre *</label>
+                <input type="text" name="nombre" .value=${this.editingMedicamento?.Nombre || ''} required>
+              </div>
+              <div class="form-group">
+                <label>Tipo *</label>
+                <select name="tipo" required>
+                  <option value="Tableta" ?selected=${this.editingMedicamento?.Tipo === 'Tableta'}>Tableta</option>
+                  <option value="Jarabe" ?selected=${this.editingMedicamento?.Tipo === 'Jarabe'}>Jarabe</option>
+                  <option value="Cápsula" ?selected=${this.editingMedicamento?.Tipo === 'Cápsula'}>Cápsula</option>
+                </select>
+              </div>
+              <div class="modal-footer">
+                <button type="button" @click=${() => this.showModal = false} class="btn-primary" style="background: #ccc">Cancelar</button>
+                <button type="submit" class="btn-primary" ?disabled=${this.saving}>Guardar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ` : ''}
 
-    render() {
-        if (this.loading) {
-            return html`
-             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
-       
-            <loading-spinner text="Cargando medicamentos..."></loading-spinner>
-            `;
-        }
-
-        const columns = [
-            { header: 'ID', field: 'IdMedicamento' },
-            { header: 'Nombre', field: 'Nombre' },
-            { header: 'Tipo', field: 'Tipo' }
-        ];
-
-        return html`
-         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
-       
-            <div class="page-header">
-                <h1 class="page-title">
-                    <i class="bi bi-capsule"></i>
-                    Medicamentos
-                </h1>
-                <button class="btn-add" @click=${this.openCreateModal}>
-                    <i class="bi bi-plus-circle"></i>
-                    Nuevo Medicamento
-                </button>
-            </div>
-
-            <data-table
-                title="Catálogo de Medicamentos"
-                .columns=${columns}
-                .data=${this.medicamentos}
-                @edit=${this.openEditModal}
-                @delete=${this.handleDelete}>
-            </data-table>
-
-            ${this.renderModal()}
-        `;
-    }
+      ${this.renderViewModal()}
+      ${this.renderConfirmModal()}
+      ${this.notification ? html`<div class="notification ${this.notification.type}">${this.notification.message}</div>` : ''}
+    `;
+  }
 }
 
-customElements.define('medicamentos-manager', MedicamentosManager);
+if (!customElements.get('medicamentos-manager')) {
+  customElements.define('medicamentos-manager', MedicamentosManager);
+}
