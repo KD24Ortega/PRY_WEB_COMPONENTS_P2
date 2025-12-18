@@ -9,34 +9,29 @@ class ApiService {
         this.token = localStorage.getItem('token');
     }
 
-    // Configurar token
+    // === CONFIGURACIÓN DE AUTENTICACIÓN ===
     setToken(token) {
         this.token = token;
         localStorage.setItem('token', token);
     }
 
-    // Obtener token
     getToken() {
         return this.token || localStorage.getItem('token');
     }
 
-    // Limpiar token
     clearToken() {
         this.token = null;
         localStorage.removeItem('token');
     }
 
-    // Headers con autenticación
     getHeaders() {
         const headers = {
             'Content-Type': 'application/json'
         };
-
         const token = this.getToken();
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
         }
-
         return headers;
     }
 
@@ -50,12 +45,12 @@ class ApiService {
 
         try {
             const response = await fetch(url, config);
-            const data = await response.json();
+            if (response.status === 204) return null;
 
+            const data = await response.json();
             if (!response.ok) {
                 throw new Error(data.error || 'Error en la petición');
             }
-
             return data;
         } catch (error) {
             console.error('Error en petición:', error);
@@ -82,33 +77,68 @@ class ApiService {
         return this.request('/auth/verify');
     }
 
-    // === ESPECIALIDADES ===
-    async getEspecialidadesPublic() {
-        const url = `${API_URL}/auth/especialidades`;
-        const config = {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        };
-
-        try {
-            const response = await fetch(url, config);
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Error en la petición');
-            }
-
-            return data;
-        } catch (error) {
-            console.error('Error al obtener especialidades:', error);
-            throw error;
-        }
+    // === USUARIOS / PERFIL ===
+    
+    /**
+     * Obtiene la lista de usuarios. 
+     * Nota: La visualización de columnas (ocultar ID) se gestiona en el componente Manager.
+     */
+    async getUsuarios() {
+        return this.request('/usuarios');
     }
 
+    async getUsuariosStats() {
+        return this.request('/usuarios/stats');
+    }
+
+    async updateUsuarioFoto(id, fotoBase64) {
+        return this.request(`/usuarios/${id}/foto`, {
+            method: 'PUT',
+            body: JSON.stringify({ foto: fotoBase64 })
+        });
+    }
+
+    // === ADMINISTRADORES ===
+    
+    /**
+     * Obtiene la lista de administradores.
+     * Nota: Para no mostrar el ID en la tabla, asegúrese de no incluir la columna 'id' en el render del componente.
+     */
+    async getAdministradores() {
+        return this.request('/administradores');
+    }
+
+    async getAdministradorById(id) {
+        return this.request(`/administradores/${id}`);
+    }
+
+    // === ESPECIALIDADES ===
     async getEspecialidades() {
         return this.request('/especialidades');
+    }
+
+    async getEspecialidadById(id) {
+        return this.request(`/especialidades/${id}`);
+    }
+
+    async createEspecialidad(data) {
+        return this.request('/especialidades', {
+            method: 'POST',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async updateEspecialidad(id, data) {
+        return this.request(`/especialidades/${id}`, {
+            method: 'PUT',
+            body: JSON.stringify(data)
+        });
+    }
+
+    async deleteEspecialidad(id) {
+        return this.request(`/especialidades/${id}`, {
+            method: 'DELETE'
+        });
     }
 
     // === MÉDICOS ===
@@ -120,26 +150,6 @@ class ApiService {
         return this.request(`/medicos/${id}`);
     }
 
-    async createMedico(data) {
-        return this.request('/medicos', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async updateMedico(id, data) {
-        return this.request(`/medicos/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async deleteMedico(id) {
-        return this.request(`/medicos/${id}`, {
-            method: 'DELETE'
-        });
-    }
-
     // === PACIENTES ===
     async getPacientes() {
         return this.request('/pacientes');
@@ -149,163 +159,9 @@ class ApiService {
         return this.request(`/pacientes/${id}`);
     }
 
-    async createPaciente(data) {
-        return this.request('/pacientes', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async updatePaciente(id, data) {
-        return this.request(`/pacientes/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async deletePaciente(id) {
-        return this.request(`/pacientes/${id}`, {
-            method: 'DELETE'
-        });
-    }
-
-    // === ADMINISTRADORES ===
-    async getAdministradores() {
-        return this.request('/administradores');
-    }
-
-    async getAdministradorById(id) {
-        return this.request(`/administradores/${id}`);
-    }
-
-    async createAdministrador(data) {
-        return this.request('/administradores', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async updateAdministrador(id, data) {
-        return this.request(`/administradores/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async deleteAdministrador(id) {
-        return this.request(`/administradores/${id}`, {
-            method: 'DELETE'
-        });
-    }
-
-    // === USUARIOS ===
-    async getUsuarios() {
-        return this.request('/usuarios');
-    }
-
-    async getUsuarioById(id) {
-        return this.request(`/usuarios/${id}`);
-    }
-
-    async getUsuariosByRole(rol) {
-        return this.request(`/usuarios/rol/${rol}`);
-    }
-
-    async getUsuariosStats() {
-        return this.request('/usuarios/stats');
-    }
-
-    async changePassword(id, currentPassword, newPassword) {
-        return this.request(`/usuarios/${id}/change-password`, {
-            method: 'PUT',
-            body: JSON.stringify({ currentPassword, newPassword })
-        });
-    }
-
-    async resetPassword(id, newPassword) {
-        return this.request(`/usuarios/${id}/reset-password`, {
-            method: 'POST',
-            body: JSON.stringify({ newPassword })
-        });
-    }
-
-    async updateUsername(id, newUsername) {
-        return this.request(`/usuarios/${id}/username`, {
-            method: 'PUT',
-            body: JSON.stringify({ newUsername })
-        });
-    }
-
-    async deleteUsuario(id) {
-        return this.request(`/usuarios/${id}`, {
-            method: 'DELETE'
-        });
-    }
-
-    // === MEDICAMENTOS ===
-    async getMedicamentos() {
-        return this.request('/medicamentos');
-    }
-
-    async getMedicamentoById(id) {
-        return this.request(`/medicamentos/${id}`);
-    }
-
-    async createMedicamento(data) {
-        return this.request('/medicamentos', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async updateMedicamento(id, data) {
-        return this.request(`/medicamentos/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async deleteMedicamento(id) {
-        return this.request(`/medicamentos/${id}`, {
-            method: 'DELETE'
-        });
-    }
-
     // === CONSULTAS ===
     async getConsultas() {
         return this.request('/consultas');
-    }
-
-    async getConsultaById(id) {
-        return this.request(`/consultas/${id}`);
-    }
-
-    async getConsultasByMedico(idMedico) {
-        return this.request(`/consultas/medico/${idMedico}`);
-    }
-
-    async getConsultasByPaciente(idPaciente) {
-        return this.request(`/consultas/paciente/${idPaciente}`);
-    }
-
-    async createConsulta(data) {
-        return this.request('/consultas', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async updateConsulta(id, data) {
-        return this.request(`/consultas/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async deleteConsulta(id) {
-        return this.request(`/consultas/${id}`, {
-            method: 'DELETE'
-        });
     }
 
     // === RECETAS ===
@@ -313,35 +169,11 @@ class ApiService {
         return this.request('/recetas');
     }
 
-    async getRecetasByConsulta(idConsulta) {
-        return this.request(`/recetas/consulta/${idConsulta}`);
-    }
-
-    async getRecetasByPaciente(idPaciente) {
-        return this.request(`/recetas/paciente/${idPaciente}`);
-    }
-
-    async createReceta(data) {
-        return this.request('/recetas', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async updateReceta(id, data) {
-        return this.request(`/recetas/${id}`, {
-            method: 'PUT',
-            body: JSON.stringify(data)
-        });
-    }
-
-    async deleteReceta(id) {
-        return this.request(`/recetas/${id}`, {
-            method: 'DELETE'
-        });
+    // === MEDICAMENTOS ===
+    async getMedicamentos() {
+        return this.request('/medicamentos');
     }
 }
 
-// Exportar instancia única
 const apiService = new ApiService();
 export default apiService;

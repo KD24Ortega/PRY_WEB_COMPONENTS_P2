@@ -412,6 +412,7 @@ class UsuariosManager extends LitElement {
         this.saving = true;
 
         try {
+            // Se asume que el método resetPassword existe en tu apiService
             await apiService.resetPassword(this.selectedUsuario.idUsuario, newPassword);
             this.showNotification('Contraseña restablecida exitosamente', 'success');
             this.closeModal();
@@ -435,6 +436,7 @@ class UsuariosManager extends LitElement {
         this.saving = true;
 
         try {
+            // Se asume que el método deleteUsuario existe en tu apiService
             await apiService.deleteUsuario(usuario.idUsuario);
             this.showNotification('Usuario eliminado exitosamente', 'success');
             this.closeModal();
@@ -486,10 +488,6 @@ class UsuariosManager extends LitElement {
 
                         <div class="detail-grid">
                             <div class="detail-item">
-                                <span class="detail-label">ID</span>
-                                <span class="detail-value">${this.selectedUsuario?.idUsuario}</span>
-                            </div>
-                            <div class="detail-item">
                                 <span class="detail-label">Usuario</span>
                                 <span class="detail-value">${this.selectedUsuario?.usuario}</span>
                             </div>
@@ -520,7 +518,7 @@ class UsuariosManager extends LitElement {
         if (this.modalType === 'reset-password') {
             return html`
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
-       
+        
                 <div class="modal-overlay" @click=${this.closeModal}>
                     <div class="modal-content" @click=${(e) => e.stopPropagation()}>
                         <div class="modal-header">
@@ -578,7 +576,7 @@ class UsuariosManager extends LitElement {
         if (this.modalType === 'delete') {
             return html`
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
-       
+        
                 <div class="modal-overlay" @click=${this.closeModal}>
                     <div class="modal-content" @click=${(e) => e.stopPropagation()}>
                         <div class="modal-header">
@@ -626,7 +624,7 @@ class UsuariosManager extends LitElement {
         }
 
         const columns = [
-            { header: 'ID', field: 'idUsuario' },
+            // SE HA ELIMINADO LA COLUMNA ID DE AQUÍ
             { header: 'Usuario', field: 'usuario' },
             { header: 'Nombre', field: 'nombre' },
             { 

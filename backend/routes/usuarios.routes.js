@@ -18,4 +18,10 @@ router.get('/:id', controller.getById);
 router.put('/:id/change-password', controller.changePassword);
 router.put('/:id/username', controller.updateUsername);
 
+/**
+ * Nueva ruta para actualizar la foto de perfil.
+ * Se coloca aquí para que cualquier usuario autenticado pueda subir su foto.
+ */
+router.put('/:id/foto', controller.updateFoto);
+
 module.exports = router;
