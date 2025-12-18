@@ -227,7 +227,7 @@ class MedicamentosManager extends LitElement {
         this.showNotification('Medicamento actualizado', 'success');
       } else {
         await apiService.createMedicamento(data);
-        this.showNotification('Medicamento creado exitosamente', 'success');
+        this.showNotification('Medicamento  exitosamente', 'success');
       }
       this.showModal = false;
       this.loadMedicamentos();
