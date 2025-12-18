@@ -211,6 +211,8 @@ class DataTable extends LitElement {
         const filteredData = this.getFilteredData();
 
         return html`
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
             <div class="table-container">
                 <div class="table-header">
                     <h3 class="table-title">${this.title}</h3>
@@ -218,7 +220,6 @@ class DataTable extends LitElement {
 
                 <div class="table-actions">
                     <div class="search-box position-relative">
-                        <i class="search-icon bi bi-search"></i>
                         <input 
                             type="text" 
                             class="search-input"

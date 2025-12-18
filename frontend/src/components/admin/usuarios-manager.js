@@ -338,6 +338,8 @@ class UsuariosManager extends LitElement {
 
         if (this.modalType === 'reset-password') {
             return html`
+             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
                 <div class="modal-overlay" @click=${this.closeModal}>
                     <div class="modal-content" @click=${(e) => e.stopPropagation()}>
                         <div class="modal-header">
@@ -397,7 +399,11 @@ class UsuariosManager extends LitElement {
 
     render() {
         if (this.loading) {
-            return html`<loading-spinner text="Cargando usuarios..."></loading-spinner>`;
+            return html`<
+             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
+            loading-spinner text="Cargando usuarios..."></loading-spinner>
+        `;
         }
 
         const columns = [
@@ -416,6 +422,8 @@ class UsuariosManager extends LitElement {
         ];
 
         return html`
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
             <div class="page-header">
                 <h1 class="page-title">
                     <i class="bi bi-person-gear"></i>

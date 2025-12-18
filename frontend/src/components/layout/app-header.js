@@ -473,6 +473,8 @@ class AppHeader extends LitElement {
                   this.msgType === 'error' ? 'msg error' : 'msg info';
 
     return html`
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+
       <div class="modal-overlay" @click=${this.closeMessage}>
         <div class="modal-content" @click=${(e) => e.stopPropagation()}>
           <div class="modal-head">
@@ -501,6 +503,8 @@ class AppHeader extends LitElement {
     if (!this.showConfirmModal) return '';
 
     return html`
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
       <div class="modal-overlay" @click=${this.closeConfirm}>
         <div class="modal-content" @click=${(e) => e.stopPropagation()}>
           <div class="modal-head">
@@ -530,6 +534,8 @@ class AppHeader extends LitElement {
 
   render() {
     return html`
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
       <header class="header">
         <div class="bar">
           <div class="left">

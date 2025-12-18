@@ -248,11 +248,13 @@ class LoginComponent extends LitElement {
 
     render() {
         return html`
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
             <div class="login-card">
                 <div class="logo-container">
                     <div class="logo">🏥</div>
                     <h2>Iniciar Sesión</h2>
-                    <p class="subtitle">Sistema Clínico ProyectoVeris</p>
+                    <p class="subtitle">Sistema Clínico</p>
                 </div>
 
                 <div class="demo-credentials">

@@ -188,6 +188,8 @@ class AppRoot extends LitElement {
     render() {
         if (!this.isAuthenticated) {
             return html`
+             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
                 <div class="app-container">
                     <div class="auth-container">
                         ${this.renderContent()}
@@ -197,6 +199,8 @@ class AppRoot extends LitElement {
         }
 
         return html`
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
             <div class="app-container">
                 <app-header></app-header>
                 <div class="main-layout">

@@ -414,6 +414,8 @@ class PacientesManager extends LitElement {
       this.msgType === 'error' ? 'msg-box msg-error' : 'msg-box msg-info';
 
     return html`
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
       <div class="modal-overlay" @click=${this.closeMessage}>
         <div class="modal-content" @click=${(e) => e.stopPropagation()}>
           <div class="modal-header">
@@ -443,6 +445,8 @@ class PacientesManager extends LitElement {
     if (!this.showConfirmModal) return '';
 
     return html`
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
       <div class="modal-overlay" @click=${this.closeConfirm}>
         <div class="modal-content" @click=${(e) => e.stopPropagation()}>
           <div class="modal-header">
@@ -479,6 +483,8 @@ class PacientesManager extends LitElement {
     const imc = this.calcIMC(paciente.Peso, paciente.Estatura);
 
     return html`
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
       <div class="modal-overlay" @click=${this.closeModal}>
         <div class="modal-content" @click=${(e) => e.stopPropagation()}>
           <div class="modal-header">
@@ -597,7 +603,12 @@ class PacientesManager extends LitElement {
 
   render() {
     if (this.loading) {
-      return html`<loading-spinner text="Cargando pacientes..."></loading-spinner>`;
+      
+      return html`
+       <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
+        <loading-spinner text="Cargando pacientes..."></loading-spinner>
+        `;
     }
 
     const columns = [
@@ -620,6 +631,8 @@ class PacientesManager extends LitElement {
     ];
 
     return html`
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
       <div class="page-header">
         <div>
           <h1 class="page-title">

@@ -64,10 +64,12 @@ class AppFooter extends LitElement {
         const currentYear = new Date().getFullYear();
 
         return html`
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
             <footer class="footer">
                 <div class="footer-content">
                     <div class="copyright">
-                        © ${currentYear} Sistema Clínico ProyectoVeris. Todos los derechos reservados.
+                        © ${currentYear} Sistema Clínico. Todos los derechos reservados.
                     </div>
                     <div class="footer-links">
                         <a href="#" class="footer-link">Soporte</a>

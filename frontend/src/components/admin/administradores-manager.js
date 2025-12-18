@@ -265,6 +265,8 @@ class AdministradoresManager extends LitElement {
     const isView = this.modalMode === 'view';
 
     return html`
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
       <div class="modal-overlay" @click=${this.closeModal}>
         <div class="modal-content" @click=${(e) => e.stopPropagation()}>
           <div class="modal-header">

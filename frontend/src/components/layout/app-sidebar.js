@@ -3,6 +3,7 @@ import authService from '../../services/auth.service.js';
 
 class AppSidebar extends LitElement {
     static styles = css`
+    
         :host {
             display: block;
         }
@@ -253,6 +254,8 @@ class AppSidebar extends LitElement {
         const menuItems = this.getMenuItems();
 
         return html`
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+    
             <aside class="sidebar ${this.collapsed ? 'collapsed' : ''} ${this.mobileOpen ? 'mobile-open' : ''}">
                 <div class="sidebar-header">
                     <h3 class="sidebar-title">Menú</h3>

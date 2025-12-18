@@ -225,6 +225,8 @@ class MedicoConsultas extends LitElement {
         const consulta = this.editingConsulta;
 
         return html`
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
             <div class="modal-overlay" @click=${this.closeModal}>
                 <div class="modal-content" @click=${(e) => e.stopPropagation()}>
                     <div class="modal-header">
@@ -273,7 +275,10 @@ class MedicoConsultas extends LitElement {
 
     render() {
         if (this.loading) {
-            return html`<loading-spinner text="Cargando..."></loading-spinner>`;
+            return html`
+             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
+            <loading-spinner text="Cargando..."></loading-spinner>`;
         }
 
         const columns = [
@@ -285,6 +290,8 @@ class MedicoConsultas extends LitElement {
         ];
 
         return html`
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
             <div class="page-header">
                 <h1 class="page-title">
                     <i class="bi bi-calendar-check"></i>

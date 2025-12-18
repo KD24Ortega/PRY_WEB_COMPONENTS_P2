@@ -273,6 +273,8 @@ class MedicamentosManager extends LitElement {
         const medicamento = this.editingMedicamento;
 
         return html`
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
             <div class="modal-overlay" @click=${this.closeModal}>
                 <div class="modal-content" @click=${(e) => e.stopPropagation()}>
                     <div class="modal-header">
@@ -326,7 +328,11 @@ class MedicamentosManager extends LitElement {
 
     render() {
         if (this.loading) {
-            return html`<loading-spinner text="Cargando medicamentos..."></loading-spinner>`;
+            return html`
+             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
+            <loading-spinner text="Cargando medicamentos..."></loading-spinner>
+            `;
         }
 
         const columns = [
@@ -336,6 +342,8 @@ class MedicamentosManager extends LitElement {
         ];
 
         return html`
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
             <div class="page-header">
                 <h1 class="page-title">
                     <i class="bi bi-capsule"></i>

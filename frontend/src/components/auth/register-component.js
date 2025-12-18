@@ -411,11 +411,13 @@ class RegisterComponent extends LitElement {
 
     render() {
         return html`
+         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+       
             <div class="register-card">
                 <div class="logo-container">
                     <div class="logo">🏥</div>
                     <h2>Registro de Usuario</h2>
-                    <p class="subtitle">Sistema Clínico ProyectoVeris</p>
+                    <p class="subtitle">Sistema Clínico</p>
                 </div>
 
                 ${this.error ? html`
@@ -445,11 +447,7 @@ class RegisterComponent extends LitElement {
                             <div class="role-icon">🧑</div>
                             <div class="role-name">Paciente</div>
                         </div>
-                        <div class="role-option ${this.selectedRole === 'ADMIN' ? 'selected' : ''}"
-                             @click=${() => this.selectRole('ADMIN')}>
-                            <div class="role-icon">⚙️</div>
-                            <div class="role-name">Administrador</div>
-                        </div>
+                        
                     </div>
 
                     ${this.selectedRole ? html`
